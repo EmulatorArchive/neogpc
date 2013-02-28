@@ -41,6 +41,9 @@ bool isPaused = false;
 int g_scale;
 int g_fullscreen;
 
+// Dialog boxes
+HWND g_tlcs900hDebugHwnd;
+
 // Current time, previous time
 INT64 m_ticksPerSecond;
 INT64 m_currentTime;
@@ -125,63 +128,60 @@ void InitIni()
 
 }
 
+INT_PTR CALLBACK TLCS900hProc(
+  HWND hwndDlg,
+  UINT uMsg,
+  WPARAM wParam,
+  LPARAM lParam
+)
+{
+    switch(uMsg)
+    {
+        case WM_COMMAND:
+			switch(LOWORD(wParam))
+            {
+				case IDC_TLCS900HD_CLOSE:
+					DestroyWindow(hwndDlg);
+					return TRUE;
+				break;
+			}
+		break;
+    }
+    return FALSE;
+}
+
 // Various window messages (handled by Main?)
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg)
     {
          case WM_CREATE:
-            HMENU hSubMenu, hSubMenuTwo;
+            HMENU hSubMenu;
             HICON hIcon, hIconSm;
 
-            hMenu = CreateMenu();
-            
-			hSubMenu = CreatePopupMenu();
-            AppendMenu(hSubMenu, MF_STRING, ID_LOAD_ROM, "L&oad Rom");
-			AppendMenu(hSubMenu, MF_STRING | MF_DISABLED, ID_UNLOAD_ROM, "U&nload Rom");
-			AppendMenu(hSubMenu, MF_SEPARATOR, 0, "");
-            AppendMenu(hSubMenu, MF_STRING, ID_FILE_EXIT, "E&xit");
-            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&File");
-			// Add reset + Pause features
-            hSubMenu = CreatePopupMenu();
-			AppendMenu(hSubMenu, MF_STRING, ID_RESET_ROM, "R&eset");
-			AppendMenu(hSubMenu, MF_STRING, ID_PAUSE_ROM, "P&ause");
-			
-			// Create NGPC menu item
-			AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&NGPC");		
-			hSubMenu = CreatePopupMenu();
+			hMenu = GetMenu(hwnd);
 
-			// Video scale
-			hSubMenuTwo = CreatePopupMenu();
-			AppendMenu(hSubMenuTwo, MF_STRING, ID_SCALE1X_NGPC, "1x");
-			AppendMenu(hSubMenuTwo, MF_STRING, ID_SCALE2X_NGPC, "2x");
-			AppendMenu(hSubMenuTwo, MF_STRING, ID_SCALE3X_NGPC, "3x");
-			AppendMenu(hSubMenuTwo, MF_STRING, ID_SCALE4X_NGPC, "4x");
-			AppendMenu(hSubMenuTwo, MF_STRING, ID_SCALE5X_NGPC, "5x");
+			hSubMenu = GetSubMenu(hMenu,2);
 			switch ( g_scale )
 			{
 			case 1:
-				CheckMenuItem(hSubMenuTwo, ID_SCALE1X_NGPC, MF_CHECKED);
+				CheckMenuItem(hSubMenu, ID_SCALE1X_NGPC, MF_CHECKED);
 				break;
 			case 2:
-				CheckMenuItem(hSubMenuTwo, ID_SCALE2X_NGPC, MF_CHECKED);
+				CheckMenuItem(hSubMenu, ID_SCALE2X_NGPC, MF_CHECKED);
 				break;
 			case 3:
-				CheckMenuItem(hSubMenuTwo, ID_SCALE3X_NGPC, MF_CHECKED);
+				CheckMenuItem(hSubMenu, ID_SCALE3X_NGPC, MF_CHECKED);
 				break;
 			case 4:
-				CheckMenuItem(hSubMenuTwo, ID_SCALE4X_NGPC, MF_CHECKED);
+				CheckMenuItem(hSubMenu, ID_SCALE4X_NGPC, MF_CHECKED);
 				break;
 			case 5:
-				CheckMenuItem(hSubMenuTwo, ID_SCALE5X_NGPC, MF_CHECKED);
+				CheckMenuItem(hSubMenu, ID_SCALE5X_NGPC, MF_CHECKED);
 				break;
 			default:
 				break;
 			};
-			AppendMenu(hSubMenu, MF_POPUP, (UINT)hSubMenuTwo, "V&ideo Scale");
-            AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Options");
-
-			SetMenu(hwnd, hMenu);
 
             break;
         case WM_COMMAND:
@@ -330,10 +330,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					if ( g_scale != 3 )
 					{
 						HMENU hSubMenu = GetSubMenu(hMenu,2);
-						CheckMenuItem(hSubMenuTwo, ID_SCALE1X_NGPC+(g_scale-1), MF_UNCHECKED);
+						CheckMenuItem(hSubMenu, ID_SCALE1X_NGPC+(g_scale-1), MF_UNCHECKED);
 						g_scale = 3;
 						video_resize(g_scale);
-						CheckMenuItem(hSubMenuTwo, ID_SCALE3X_NGPC, MF_CHECKED);
+						CheckMenuItem(hSubMenu, ID_SCALE3X_NGPC, MF_CHECKED);
 					}
 				break;
 				case ID_SCALE4X_NGPC:
@@ -354,6 +354,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						g_scale = 5;
 						video_resize(g_scale);
 						CheckMenuItem(hSubMenu, ID_SCALE5X_NGPC, MF_CHECKED);
+					}
+				break;
+				case ID_DEBUG_TLCS900H:
+					g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), hwnd, TLCS900hProc);
+					if ( g_tlcs900hDebugHwnd != NULL )
+					{
+						ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
+						return TRUE;
 					}
 				break;
             }
@@ -423,6 +431,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				TranslateMessage(&Msg);
 				DispatchMessage(&Msg);
 			}
+			/*
+			if (!IsDialogMessage (g_tlcs900hDebugHwnd, &Msg)) // When should we do this??
+			{
+				TranslateMessage ( &Msg );
+				DispatchMessage ( &Msg );
+			}
+			*/
 		}
 		// Is the rom currently running?
 		if ( isRunning && !isPaused)

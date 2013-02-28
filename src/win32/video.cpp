@@ -25,7 +25,7 @@ BOOL video_init(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MYMENU);;
+    wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINMENU);
     wc.lpszClassName = "NeoGPC";
     wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
