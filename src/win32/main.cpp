@@ -23,9 +23,7 @@
 
 // Win32 depends
 #include <string>
-
 #define DIRECTINPUT_VERSION 0x0800
-
 #include <dinput.h> // Used for INI defines
 
 // NeoGPC includes
@@ -34,6 +32,9 @@
 #include "../core/neopopsound.h"
 #include "../core/flash.h"
 
+// NeoGPC Win32 includes
+#include "../win32/windebugger.h"
+
 bool isRunning = false;
 bool isPaused = false;
 
@@ -41,8 +42,9 @@ bool isPaused = false;
 int g_scale;
 int g_fullscreen;
 
-// Dialog boxes
+// Debugger Variables
 HWND g_tlcs900hDebugHwnd;
+BOOL g_tlcs900hActive;
 
 // Current time, previous time
 INT64 m_ticksPerSecond;
@@ -145,7 +147,13 @@ INT_PTR CALLBACK TLCS900hProc(
 					return TRUE;
 				break;
 			}
-		break;
+			break;
+		case WM_DESTROY:
+			g_tlcs900hActive = false;
+			break;
+		default:
+			int debug = 0;
+			break;
     }
     return FALSE;
 }
@@ -357,11 +365,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 				break;
 				case ID_DEBUG_TLCS900H:
-					g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), hwnd, TLCS900hProc);
-					if ( g_tlcs900hDebugHwnd != NULL )
+					if ( g_tlcs900hActive == false )
 					{
-						ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
-						return TRUE;
+						g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), hwnd, TLCS900hProc);
+						if ( g_tlcs900hDebugHwnd != NULL )
+						{
+							g_tlcs900hActive = true;
+							setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger
+							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
+							return TRUE;
+						}
 					}
 				break;
             }
@@ -417,6 +430,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Initialize our input driver
 	input_init(hInstance, g_hwnd);
+
+	// Debugger Variables
+	g_tlcs900hActive = false;
 
 	// We haven't quit yet
 	m_emuState = EMU_NO_ROM;
@@ -479,7 +495,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 			m_lastTime = m_currentTime;
 		}
-
+		// Is the TLCS900h Debugger Active?
+		if ( g_tlcs900hActive == true )
+		{
+		}		
 		// Should we load a rom?
 		if ( EMU_LOAD_ROM == m_emuState )
 		{
