@@ -76,6 +76,7 @@
     <ClCompile Include="..\core\neopopsound.cpp" />
     <ClCompile Include="..\core\sound.cpp" />
     <ClCompile Include="..\cpu\tlcs900h.cpp" />
+    <ClCompile Include="..\cpu\tlcs900hdebugger.cpp" />
     <ClCompile Include="..\cpu\z80.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="input_directx.cpp" />
@@ -95,6 +96,7 @@
     <ClInclude Include="..\core\neopopsound.h" />
     <ClInclude Include="..\core\sound.h" />
     <ClInclude Include="..\cpu\tlcs900h.h" />
+    <ClInclude Include="..\cpu\tlcs900hdebugger.h" />
     <ClInclude Include="..\cpu\z80.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="input.h" />

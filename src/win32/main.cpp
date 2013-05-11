@@ -142,7 +142,23 @@ INT_PTR CALLBACK TLCS900hProc(
         case WM_COMMAND:
 			switch(LOWORD(wParam))
             {
+				case IDC_TLCS900HD_ADD_BREAKPOINT:
+					neogpc_setbreakpoint(0x0020016c);
+				break;
+				case IDC_TLCS900HD_REMOVE_BREAKPOINT:
+					neogpc_deletebreakpoint(0);
+				break;
+				case IDC_TLCS900HD_PAUSE:
+					neogpc_pausedebugger();
+				break;
+				case IDC_TLCS900HD_RESUME:
+					neogpc_resumedebugger();
+				break;
+				case IDC_TLCS900HD_STEP:
+					neogpc_stepdebugger();
+				break;
 				case IDC_TLCS900HD_CLOSE:
+					neogpc_cleardebugger();
 					DestroyWindow(hwndDlg);
 					return TRUE;
 				break;
@@ -367,7 +383,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				case ID_DEBUG_TLCS900H:
 					if ( g_tlcs900hActive == false )
 					{
-						g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), hwnd, TLCS900hProc);
+						g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), 0/*hwnd*/, TLCS900hProc);
 						if ( g_tlcs900hDebugHwnd != NULL )
 						{
 							g_tlcs900hActive = true;
@@ -414,6 +430,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	// Keep our window open
 	MSG Msg;
+	HWND hWnd;
 
 	// Initialize INI system
 	InitIni();
@@ -439,22 +456,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	while(m_emuState != EMU_QUIT)
 	{
-		//Message Pump
+		//Message Pump (does not wait)
 		if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE))
 		{
-			if (!TranslateAccelerator(g_hwnd, NULL, &Msg))
+			hWnd = GetAncestor(Msg.hwnd, GA_ROOT);
+			if ( !hWnd )
+				hWnd = Msg.hwnd;
+
+			// Do not pass a message to our dialog message box
+			if ( !IsDialogMessage(hWnd, &Msg) )
 			{
-				TranslateMessage(&Msg);
-				DispatchMessage(&Msg);
+				if ( !TranslateAccelerator(g_hwnd, NULL, &Msg) )
+				{
+					TranslateMessage(&Msg);
+					DispatchMessage(&Msg);
+				}
 			}
-			/*
-			if (!IsDialogMessage (g_tlcs900hDebugHwnd, &Msg)) // When should we do this??
+			else
 			{
-				TranslateMessage ( &Msg );
-				DispatchMessage ( &Msg );
+				int debug = 0;
 			}
-			*/
 		}
+
 		// Is the rom currently running?
 		if ( isRunning && !isPaused)
 		{
@@ -489,8 +512,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 				m_numFrames = 0;
 
-				Sleep(1); // add some sleep
-
+				Sleep(1); // add some sleep (CPU cool-down)
 			}
 
 			m_lastTime = m_currentTime;

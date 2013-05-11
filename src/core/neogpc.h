@@ -6,6 +6,24 @@
 // Version of our NeoGPC build
 #define NEOGPC_VERSION "0.1RC1"
 
+// Uncomment to enable NeoGPC TLCS900h Debugger
+#define NEOGPC_DEBUGGER
+#ifdef NEOGPC_DEBUGGER
+
+	#include "../cpu/tlcs900hdebugger.h"
+	
+	class tlcs900hdebugger; // forward declare so we know this is accessible
+	extern tlcs900hdebugger g_tlcs900hDebugger;
+
+	int neogpc_setbreakpoint(unsigned int);
+	void neogpc_deletebreakpoint(int);
+	void neogpc_stepdebugger();
+	void neogpc_pausedebugger();
+	void neogpc_resumedebugger();
+	void neogpc_cleardebugger();
+
+#endif
+
 //the number of frames we want to draw to the host's screen every second
 #define HOST_FPS 60
 

@@ -96,7 +96,7 @@ bool neogpc_loadrom(char * rom, int romLen, char * romName)
 void neogpc_emulate(unsigned int frames)
 {
    // Emulate X number of frames according to our host FPS
-   tlcs_execute((6*1024*1024) / HOST_FPS);
+   tlcs_execute((6*1024*1000) / HOST_FPS); // 6144000 = 6.144 MHz processor
 }
 
 // Shut everything down
@@ -104,3 +104,46 @@ void neogpc_shutdown()
 {
 	flashShutdown();		// Save the flash memory
 }
+
+// TLCS900h Debugger
+// Uncomment to enable NeoGPC TLCS900h Debugger
+#ifdef NEOGPC_DEBUGGER
+
+// set the breakpoint
+int neogpc_setbreakpoint(unsigned int address)
+{
+	return g_tlcs900hDebugger.setBreakpoint(address);
+}
+
+// remove the breakpoint
+void neogpc_deletebreakpoint(int index)
+{
+	g_tlcs900hDebugger.removeBreakpoint(index);
+}
+
+// Step the debugger
+void neogpc_stepdebugger()
+{
+	g_tlcs900hDebugger.step();
+}
+
+// Pause the debugger
+void neogpc_pausedebugger()
+{
+	g_tlcs900hDebugger.pause();
+}
+
+// Resume the debugger
+void neogpc_resumedebugger()
+{
+	g_tlcs900hDebugger.resume();
+}
+
+// Clear the debugger and resume the rom
+void neogpc_cleardebugger()
+{
+	g_tlcs900hDebugger.clearBreakpoints();
+	g_tlcs900hDebugger.resume();
+}
+
+#endif

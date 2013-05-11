@@ -74,4 +74,15 @@ void tlcsTI0();
 
 void tlcs_execute(int cycles);
 
+// For defines in NeoGPC, take these out for a non-NeoGPC emulator
+#include "../core/neogpc.h"
+
+// Do we want to use the debugger?
+#define TLCS900H_DEBUGGER
+
+#include "../cpu/tlcs900hdebugger.h"
+
+// Create our global tlcs900h debugger
+extern tlcs900hdebugger g_tlcs900hDebugger;
+
 #endif // !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_)

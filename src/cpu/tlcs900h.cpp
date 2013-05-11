@@ -49,6 +49,12 @@
 //#include "ngpBios.h"
 #include "../core/neopopsound.h"
 
+#ifdef NEOGPC_DEBUGGER
+
+// Create our global tlcs900h debugger
+tlcs900hdebugger g_tlcs900hDebugger;
+
+#endif
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -119,552 +125,6 @@ struct profStruct
 
 struct profStruct profile[256];
 
-char *instr_names[256] =
-    {
-        "nop", "normal", "pushsr", "popsr", "tmax", "halt", "ei", "reti",
-        "ld8I", "pushI", "ldw8I", "pushwI", "incf", "decf", "ret", "retd",
-        "rcf", "scf", "ccf", "zcf", "pushA", "popA", "exFF", "ldf",
-        "pushF", "popF", "jp16", "jp24", "call16", "call24", "calr", "udef",
-        "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB",
-        "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW",
-        "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW",
-        "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL",
-        //
-        "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL",
-        "popRW", "popRW", "popRW", "popRW", "popRW", "popRW", "popRW", "popRW",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "popRL", "popRL", "popRL", "popRL", "popRL", "popRL", "popRL", "popRL",
-        "jrcc0", "jrcc1", "jrcc2", "jrcc3", "jrcc4", "jrcc5", "jrcc6", "jrcc7",
-        "jrcc8", "jrcc9", "jrccA", "jrccB", "jrccC", "jrccD", "jrccE", "jrccF",
-        "jrlcc0", "jrlcc1", "jrlcc2", "jrlcc3", "jrlcc4", "jrlcc5", "jrlcc6", "jrlcc7",
-        "jrlcc8", "jrlcc9", "jrlccA", "jrlccB", "jrlccC", "jrlccD", "jrlccE", "jrlccF",
-        //
-        "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80",
-        "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88",
-        "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90",
-        "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98",
-        "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0",
-        "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8",
-        "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0",
-        "decodeB8", "decodeB8", "decodeB8", "decodeBB", "decodeB8", "decodeB8", "decodeB8", "decodeB8",
-        //
-        "decodeC0", "decodeC1", "decodeC2", "decodeC3", "decodeC4", "decodeC5", "udef", "decodeC7",
-        "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8",
-        "decodeD0", "decodeD1", "decodeD2", "decodeD3", "decodeD4", "decodeD5", "udef", "decodeD7",
-        "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8",
-        "decodeE0", "decodeE1", "decodeE2", "decodeE3", "decodeE4", "decodeE5", "udef", "decodeE7",
-        "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8",
-        "decodeF0", "decodeF1", "decodeF2", "decodeF3", "decodeF4", "decodeF5", "udef", "ldx",
-        "swi", "swi", "swi", "swi", "swi", "swi", "swi", "swi"
-    };
-
-char *instr_table80[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushM00", "udef", "rld00", "rrd00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldi", "ldir", "ldd", "lddr", "cpiB", "cpirB", "cpdB", "cpdrB",
-        "udef", "ld16M00", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00",
-        "addMI00", "adcMI00", "subMI00", "sbcMI00", "andMI00", "xorMI00", "orMI00", "cpMI00",
-        //
-        "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00",
-        "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00",
-        "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00",
-        "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00",
-        "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00",
-        "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcM00", "rrcM00", "rlM00", "rrM00", "slaM00", "sraM00", "sllM00", "srlM00",
-        //
-        "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00",
-        "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00",
-        "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00",
-        "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00",
-        "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00",
-        "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00",
-        "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00",
-        "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00",
-        //
-        "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00",
-        "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00",
-        "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00",
-        "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00",
-        "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00",
-        "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
-        "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
-        "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
-    };
-
-char *instr_table90[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldiw", "ldirw", "lddw", "lddrw", "cpiW", "cpirW", "cpdW", "cpdrW",
-        "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-        "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-        //
-        "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-        "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-        "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-        "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-        "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-        "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-        //
-        "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-        "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-        "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-        "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-        "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-        "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-        "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-        "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-        //
-        "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-        "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-        "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-        "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-        "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-        "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-        "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-        "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-    };
-
-char *instr_table98[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-        "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-        //
-        "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-        "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-        "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-        "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-        "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-        "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-        //
-        "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-        "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-        "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-        "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-        "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-        "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-        "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-        "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-        //
-        "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-        "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-        "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-        "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-        "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-        "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-        "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-        "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-    };
-
-char *instr_tableA0[256] =
-    {
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef ", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20",
-        "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20",
-        "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20",
-        "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20",
-        "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20",
-        "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20",
-        "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20",
-        "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20",
-        //
-        "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20",
-        "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20",
-        "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20",
-        "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20",
-        "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20",
-        "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
-        "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
-        "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
-    };
-
-char *instr_tableB0[256] =
-    {
-        "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-        "udef", "udef", "udef", "udef", "udef ", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-        "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-        "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-        "udef", "udef", "udef ", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef ", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-        "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-        "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-        "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-        "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-        "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-        "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-        "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-        //
-        "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-        "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-        "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-        "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-        "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-        "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-        "retcc0", "retcc1", "retcc2", "retcc3", "retcc4", "retcc5", "retcc6", "retcc7",
-        "retcc8", "retcc9", "retccA", "retccB", "retccC", "retccD", "retccE", "retccF"
-    };
-
-char *instr_tableB8[256] =
-    {
-        "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-        "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-        "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-        "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-        "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-        "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-        "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-        "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-        "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-        "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-        //
-        "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-        "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-        "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-        "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-        "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-        "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
-    };
-
-char *instr_tableC0[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushM00", "udef", "rld00", "rrd00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "ld16M00", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00",
-        "addMI00", "adcMI00", "subMI00", "sbcMI00", "andMI00", "xorMI00", "orMI00", "cpMI00",
-        //
-        "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00",
-        "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00",
-        "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00",
-        "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00",
-        "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00",
-        "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcM00", "rrcM00", "rlM00", "rrM00", "slaM00", "sraM00", "sllM00", "srlM00",
-        //
-        "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00",
-        "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00",
-        "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00",
-        "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00",
-        "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00",
-        "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00",
-        "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00",
-        "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00",
-        //
-        "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00",
-        "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00",
-        "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00",
-        "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00",
-        "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00",
-        "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
-        "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
-        "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
-    };
-
-char *instr_tableC8[256] =
-    {
-        "udef", "udef", "udef", "ldrIB", "pushrB", "poprB", "cplrB", "negrB",
-        "mulrIB", "mulsrIB", "divrIB", "divsrIB", "udef", "udef", "udef", "udef",
-        "daar", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "bios", "udef", "djnzB", "udef", "udef", "udef",
-        "andcf4rB", "orcf4rB", "xorcf4rB", "ldcf4rB", "stcf4rB", "udef", "udef", "udef",
-        "andcfArB", "orcfArB", "xorcfArB", "ldcfArB", "stcfArB", "udef", "ldccrB", "ldcrcB",
-        "res4rB", "set4rB", "chg4rB", "bit4rB", "tset4rB", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB",
-        "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB",
-        "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB",
-        "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB",
-        "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB",
-        "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB",
-        "sccB0", "sccB1", "sccB2", "sccB3", "sccB4", "sccB5", "sccB6", "sccB7",
-        "sccB8", "sccB9", "sccBA", "sccBB", "sccBC", "sccBD", "sccBE", "sccBF",
-        //
-        "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB",
-        "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB",
-        "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB",
-        "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB",
-        "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB",
-        "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B",
-        "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB",
-        "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB",
-        //
-        "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB",
-        "addrIB", "adcrIB", "subrIB", "sbcrIB", "andrIB", "xorrIB", "orrIB", "cprIB",
-        "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB",
-        "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B",
-        "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB",
-        "rlc4rB", "rrc4rB", "rl4rB", "rr4rB", "sla4rB", "sra4rB", "sll4rB", "srl4rB",
-        "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB",
-        "rlcArB", "rrcArB", "rlArB", "rrArB", "slaArB", "sraArB", "sllArB", "srlArB"
-    };
-
-char *instr_tableD0[256] =
-    {
-        "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-        "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-        //
-        "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-        "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-        "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-        "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-        "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-        "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-        //
-        "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-        "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-        "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-        "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-        "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-        "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-        "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-        "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-        //
-        "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-        "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-        "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-        "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-        "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-        "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-        "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-        "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-    };
-
-char *instr_tableD8[256] =
-    {
-        "udef", "udef", "udef", "ldrIW", "pushrW", "poprW", "cplrW", "negrW",
-        "mulrIW", "mulsrIW", "divrIW", "divsrIW", "udef", "udef", "bs1f", "bs1b",
-        "udef", "udef", "extzrW", "extsrW", "paarW", "udef", "mirrr", "udef",
-        "udef", "mular", "udef", "udef", "djnzW", "udef", "udef", "udef",
-        "andcf4rW", "orcf4rW", "xorcf4rW", "ldcf4rW", "stcf4rW", "udef", "udef", "udef",
-        "andcfArW", "orcfArW", "xorcfArW", "ldcfArW", "stcfArW", "udef", "ldccrW", "ldcrcW",
-        "res4rW", "set4rW", "chg4rW", "bit4rW", "tset4rW", "udef", "udef", "udef",
-        "minc1", "minc2", "minc4", "udef", "mdec1", "mdec2", "mdec4", "udef",
-        //
-        "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW",
-        "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW",
-        "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW",
-        "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW",
-        "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW",
-        "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW",
-        "sccW0", "sccW1", "sccW2", "sccW3", "sccW4", "sccW5", "sccW6", "sccW7",
-        "sccW8", "sccW9", "sccWA", "sccWB", "sccWC", "sccWD", "sccWE", "sccWF",
-        //
-        "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW",
-        "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW",
-        "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW",
-        "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW",
-        "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW",
-        "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W",
-        "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW",
-        "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW",
-        //
-        "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW",
-        "addrIW", "adcrIW", "subrIW", "sbcrIW", "andrIW", "xorrIW", "orrIW", "cprIW",
-        "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW",
-        "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W",
-        "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW",
-        "rlc4rW", "rrc4rW", "rl4rW", "rr4rW", "sla4rW", "sra4rW", "sll4rW", "srl4rW",
-        "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW",
-        "rlcArW", "rrcArW", "rlArW", "rrArW", "slaArW", "sraArW", "sllArW", "srlArW"
-    };
-
-char *instr_tableE0[256] =
-    {
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef ", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20",
-        "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20",
-        "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20",
-        "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20",
-        "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20",
-        "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20",
-        "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20",
-        "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20",
-        //
-        "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20",
-        "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20",
-        "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20",
-        "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20",
-        "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20",
-        "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
-        "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
-        "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
-    };
-
-char *instr_tableE8[256] =
-    {
-        "udef", "udef", "udef", "ldrIL", "pushrL", "poprL", "udef", "udef",
-        "udef", "udef", "udef", "udef", "link", "unlk", "udef", "udef",
-        "udef", "udef", "extzrL", "extsrL", "paarL", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "ldccrL", "ldcrcL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL",
-        "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL",
-        "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL",
-        "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL",
-        "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL",
-        "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL",
-        "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L",
-        "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL",
-        "addrIL", "adcrIL", "subrIL", "sbcrIL", "andrIL", "xorrIL", "orrIL", "cprIL",
-        "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL",
-        "rlc4rL", "rrc4rL", "rl4rL", "rr4rL", "sla4rL", "sra4rL", "sll4rL", "srl4rL",
-        "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL",
-        "rlcArL", "rrcArL", "rlArL", "rrArL", "slaArL", "sraArL", "sllArL", "srlArL"
-    };
-
-char *instr_tableF0[256] =
-    {
-        "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-        "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-        "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        //
-        "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-        "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-        "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-        "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-        "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-        "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-        "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-        "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-        //
-        "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-        "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-        "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-        "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-        "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-        "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-        "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
-    };
-
 void initTlcs900hProfile()
 {
     memset(profile, 0, 256 * sizeof(profStruct));
@@ -721,17 +181,7 @@ gen_regsXDE2, gen_regsXHL2, gen_regsXWA3, gen_regsXBC3, gen_regsXDE3,
 gen_regsXHL3, gen_regsXIX, gen_regsXIY, gen_regsXIZ, gen_regsXSP,
 gen_regsSP, gen_regsXSSP, gen_regsXNSP;
 
-#ifdef TARGET_GP2X
-//it's defined in StdAfx.h
-#ifndef GENREGSPC_AS_REG
-unsigned long gen_regsPC;
-#endif
-#ifndef GENREGSSR_AS_REG
-unsigned long gen_regsSR;
-#endif
-#else
 unsigned long gen_regsPC, gen_regsSR;
-#endif
 
 // declare ldc registers
 unsigned char ldcRegs[64];
@@ -772,11 +222,7 @@ unsigned char ldcRegs[64];
 // definition for F'
 unsigned char F2;
 
-#ifdef TARGET_GP2X
-//it's defined in StdAfx.h
-#else
 unsigned char *my_pc = NULL;
-#endif
 
 //unsigned char *saved_my_pc;
 
@@ -819,10 +265,7 @@ unsigned long *regL, memL;
 // used during instruction decode
 // lastbyte - to keep track of the last read byte; used when extra information is stored in the
 //            opcode itself.
-#ifndef TARGET_GP2X
 unsigned char opcode;
-#endif
-//unsigned char opcode1, opcode2;
 
 unsigned char lastbyte;
 
@@ -862,13 +305,13 @@ inline void mem_writeB(unsigned long addr, unsigned char data)
 
 inline void tlcsFastMemWriteB(unsigned long addr,unsigned char data)
 {
-    //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
+
 	memRAM[((addr&0xFFFFFF)-0x00004000)] = data;
 }
 
 inline void tlcsFastMemWriteW(unsigned long addr, unsigned short data)
 {
-    //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
+
     unsigned char*ram = memRAM+((addr&0xFFFFFF)-0x00004000);
     if (((unsigned long)ram)&0x1)
     {
@@ -881,7 +324,7 @@ inline void tlcsFastMemWriteW(unsigned long addr, unsigned short data)
 
 inline void tlcsFastMemWriteL(unsigned long addr, unsigned long data)
 {
-    //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
+
     unsigned char*ram = memRAM+((addr&0xFFFFFF)-0x00004000);
     if (((unsigned long)ram)&0x3)
     {
@@ -949,7 +392,7 @@ inline void tlcsMemWriteBaddrB(unsigned char addr, unsigned char data)
 // write a word (data) to a memory address (addr)
 inline void tlcsMemWriteW(unsigned long addr, unsigned short data)
 {
-    //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
+
     if ((addr&0xFFFFFF)>0x00003fff && (addr&0xFFFFFF)<0x00018000)
     {
         tlcsFastMemWriteW(addr, data);
@@ -978,7 +421,7 @@ inline void tlcsMemWriteWaddrB(unsigned long addr, unsigned short data)
 // write a long word (data) to a memory address (addr)
 inline void tlcsMemWriteL(unsigned long addr, unsigned long data)
 {
-    //Flavor:  I think we're getting carried away with this addr&0xFFFFFF junk.  It's all over, now.  :(
+
     addr&=0xFFFFFF;
     if (addr>0x00003fff && addr<0x00018000)
     {
@@ -1002,65 +445,12 @@ inline void tlcsMemWriteL(unsigned long addr, unsigned long data)
 
 inline unsigned char readbyte()
 {
-#ifdef TARGET_GP2X
-    unsigned char __val asm("r0");//%0 and r0 are the same, now
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "ldrb %0, [%2], #1\n\t"
-        "add    %1, %1, #1"
-        : "=r" (__val)
-        : "r" (gen_regsPC), "r" (my_pc)
-        : );
-#else
-
-    asm volatile(
-        "ldr r3, %1\n\t"
-        "ldrb %0, [%2], #1\n\t"
-        "add r3, r3, #1\n\t"
-        "str r3, %1"
-    : "=r" (__val)
-                : "m" (gen_regsPC), "r" (my_pc)
-                : "r3");
-#endif
-
-    return __val;
-#else
-
     ++gen_regsPC;
     return *(my_pc++);
-#endif
 }
 
 inline unsigned char readbyteSetLastbyte()
 {
-#ifdef TARGET_GP2X
-    unsigned char __val asm("r0");//%0 and r0 are the same, now
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "ldrb %0, [%3], #1\n\t"
-        "ldrb %1, [%3], #1\n\t"
-        "add %2, %2, #2\n\t"
-    : "=r" (__val), "=r" (lastbyte)
-                : "r" (gen_regsPC), "r" (my_pc)
-                : );
-#else
-
-    asm volatile(
-        "ldr r3, %2\n\t"
-        "ldrb %0, [%3], #1\n\t"
-        "ldrb %1, [%3], #1\n\t"
-        "add r3, r3, #2\n\t"
-        "str r3, %2"
-    : "=r" (__val), "=r" (lastbyte)
-                : "m" (gen_regsPC), "r" (my_pc)
-                : "r3");
-#endif
-
-    return __val;
-#else
-
     register unsigned char i;
     register unsigned short j;
 
@@ -1080,40 +470,10 @@ inline unsigned char readbyteSetLastbyte()
         return j;
     }
     return i;
-#endif
 }
 
 inline unsigned short readword()
 {
-#ifdef TARGET_GP2X
-    unsigned short __val asm("r0");//%0 and r0 are the same, now
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "ldrb %0, [%2], #1\n\t"
-        "ldrb r2, [%2], #1\n\t"
-        "add %1, %1, #2\n\t"
-        "orr %0, %0, r2, asl #8"
-    : "=r" (__val)
-                : "r" (gen_regsPC), "r" (my_pc)
-                : "r2");
-#else
-
-    asm volatile(
-        "ldr r3, %1\n\t"
-        "ldrb %0, [%2], #1\n\t"
-        "ldrb r2, [%2], #1\n\t"
-        "add r3, r3, #2\n\t"
-        "str r3, %1\n\t"
-        "orr %0, %0, r2, asl #8"
-    : "=r" (__val)
-                : "m" (gen_regsPC), "r" (my_pc)
-                : "r2","r3");
-#endif
-
-    return __val;
-#else
-
     register unsigned short i;
 
     gen_regsPC+= 2;
@@ -1132,43 +492,10 @@ inline unsigned short readword()
     }
 
     return i;
-#endif
 }
 
 inline unsigned short readwordSetLastbyte()
 {
-#ifdef TARGET_GP2X
-    unsigned short __val asm("r0");//%0 and r0 are the same, now
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "ldrb %0, [%3], #1\n\t"
-        "ldrb r2, [%3], #1\n\t"
-        "ldrb %1, [%3], #1\n\t"
-        "add %2, %2, #3\n\t"
-        "orr %0, %0, r2, asl #8"
-    : "=r" (__val), "=r" (lastbyte)
-                : "r" (gen_regsPC), "r" (my_pc)
-                : "r2");
-#else
-
-    asm volatile(
-        "ldr r3, %2\n\t"
-        "ldrb %0, [%3], #1\n\t"
-        "ldrb r2, [%3], #1\n\t"
-        "ldrb %1, [%3], #1\n\t"
-        "add r3, r3, #3\n\t"
-        "str r3, %2\n\t"
-        "orr %0, %0, r2, asl #8"
-    : "=r" (__val), "=r" (lastbyte)
-                : "m" (gen_regsPC), "r" (my_pc)
-                : "r2","r3");
-#endif
-
-    return __val;
-
-#else
-
     register unsigned short i;
     register unsigned long j;
 
@@ -1192,7 +519,6 @@ inline unsigned short readwordSetLastbyte()
     }
 
     return i;
-#endif
 }
 
 /*
@@ -1204,48 +530,6 @@ Or, we could just read a dword and forget about the MSB
 */
 inline unsigned long read24()
 {
-#ifdef TARGET_GP2X
-    register unsigned long __val asm("r0");//%0 and r0 are the same, now
-
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "add %2, %2, #3\n"
-        "bic r1,%1,#3 \n"
-        "ldmia r1,{r0,r3} \n"
-        "ands r1,%1,#3 \n"
-        "movne r2,r1,lsl #3 \n"
-        "movne r0,r0,lsr r2 \n"
-        "rsbne r1,r2,#32 \n"
-        "orrne r0,r0,r3,lsl r1\n"
-        "and    r0, r0, #0xFFFFFF\n"
-        "add    %1, %1, #3"
-    : "=r" (__val)
-                : "r"(my_pc), "r"(gen_regsPC)
-                : "r1","r2","r3");
-#else
-
-    asm volatile(
-        "ldr r3, %2\n"
-        "add r3, r3, #3\n"
-        "str r3, %2\n"
-        "bic r1,%1,#3 \n"
-        "ldmia r1,{r0,r3} \n"
-        "ands r1,%1,#3 \n"
-        "movne r2,r1,lsl #3 \n"
-        "movne r0,r0,lsr r2 \n"
-        "rsbne r1,r2,#32 \n"
-        "orrne r0,r0,r3,lsl r1\n"
-        "and    r0, r0, #0xFFFFFF\n"
-        "add    %1, %1, #3"
-    : "=r" (__val)
-                : "r"(my_pc), "m"(gen_regsPC)
-                : "r1","r2","r3");
-#endif
-
-    return __val;
-#else
-
     register unsigned long i;
 
     gen_regsPC+= 3;
@@ -1264,57 +548,10 @@ inline unsigned long read24()
     }
 
     //return i;
-#endif
 }
 
 inline unsigned long read24SetLastbyte()
 {
-#ifdef TARGET_GP2X
-    register unsigned long __val asm("r0");//%0 and r0 are the same, now
-
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "add %3, %3, #4\n"
-        "bic r1,%2,#3 \n"
-        "ldmia r1,{r0,r3} \n"
-        "ands r1,%2,#3 \n"
-        "movne r2,r1,lsl #3 \n"
-        "movne r0,r0,lsr r2 \n"
-        "rsbne r1,r2,#32 \n"
-        "orrne r0,r0,r3,lsl r1\n"
-        "and    %1, r0, #0xFF000000\n"
-        "mov    %1, %1, lsr #24\n"
-        "and    r0, r0, #0x00FFFFFF\n"
-        "add    %2, %2, #4"
-    : "=r" (__val), "=r" (lastbyte)
-                : "r"(my_pc), "r"(gen_regsPC)
-                : "r1","r2","r3");
-#else
-
-    asm volatile(
-        "ldr r3, %3\n"
-        "add r3, r3, #4\n"
-        "str r3, %3\n"
-        "bic r1,%2,#3 \n"
-        "ldmia r1,{r0,r3} \n"
-        "ands r1,%2,#3 \n"
-        "movne r2,r1,lsl #3 \n"
-        "movne r0,r0,lsr r2 \n"
-        "rsbne r1,r2,#32 \n"
-        "orrne r0,r0,r3,lsl r1\n"
-        "and    %1, r0, #0xFF000000\n"
-        "mov    %1, %1, lsr #24\n"
-        "and    r0, r0, #0x00FFFFFF\n"
-        "add    %2, %2, #4"
-    : "=r" (__val), "=r" (lastbyte)
-                : "r"(my_pc), "m"(gen_regsPC)
-                : "r1","r2","r3");
-#endif
-
-    return __val;
-#else
-
     register unsigned long i;
 
     gen_regsPC+= 4;
@@ -1337,51 +574,10 @@ inline unsigned long read24SetLastbyte()
     }
 
     //return i;
-#endif
 }
 
 inline unsigned long readlong()
 {
-#ifdef TARGET_GP2X
-    register unsigned long __val asm("r0");//%0 and r0 are the same, now
-
-#ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "add %2, %2, #4\n"
-        "bic r1,%1,#3 \n"
-        "ldmia r1,{r0,r3} \n"
-        "ands r1,%1,#3 \n"
-        "movne r2,r1,lsl #3 \n"
-        "movne r0,r0,lsr r2 \n"
-        "rsbne r1,r2,#32 \n"
-        "orrne r0,r0,r3,lsl r1\n"
-        "add    %1, %1, #4"
-    : "=r" (__val)
-                : "r"(my_pc), "r"(gen_regsPC)
-                : "r1","r2","r3");
-#else
-
-    asm volatile(
-        "ldr r3, %2\n"
-        "add r3, r3, #4\n"
-        "str r3, %2\n"
-        "bic r1,%1,#3 \n"
-        "ldmia r1,{r0,r3} \n"
-        "ands r1,%1,#3 \n"
-        "movne r2,r1,lsl #3 \n"
-        "movne r0,r0,lsr r2 \n"
-        "rsbne r1,r2,#32 \n"
-        "orrne r0,r0,r3,lsl r1\n"
-        "add    %1, %1, #4"
-    : "=r" (__val)
-                : "r"(my_pc), "m"(gen_regsPC)
-                : "r1","r2","r3");
-#endif
-
-    return __val;
-#else
-
     register unsigned long i;
 
     gen_regsPC+= 4;
@@ -1401,103 +597,32 @@ inline unsigned long readlong()
     }
 
     return i;
-#endif
 }
 
 inline void doJumpByte()
 {
-#ifdef TARGET_GP2X
- #ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "ldrsb r0, [%1]\n\t"
-        "adds    r0, r0, #1\n\t"
-        "adds    %0, %0, r0\n\t"
-        "adds    %1, %1, r0"
-        :
-        : "r" (gen_regsPC), "r" (my_pc)
-        : "r0");
-
- #else
- #error doJumpByte not implemented
- #endif
-
-#else
     signed char d8 = readbyte();
     gen_regsPC+=d8;
     my_pc+=d8;
-#endif
 }
 
 inline void skipJumpByte()
 {
-#ifdef TARGET_GP2X
- #ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "add    %0, %0, #1\n\t"
-        "add    %1, %1, #1"
-        :
-        : "r" (gen_regsPC), "r" (my_pc)
-        :);
-
- #else
- #error skipJumpByte not implemented
- #endif
-
-#else
     ++gen_regsPC;
     ++my_pc;
-#endif
 }
 
 inline void doJumpWord()
 {
-#ifdef TARGET_GP2X
- #ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "ldrsb    r0, [%1,#1]\n\t"
-        "ldrb    r1, [%1]\n\t"
-        "orr     r0, r1, r0, asl #8\n\t"
-        "add    r0, r0, #2\n\t"
-        "add    %0, %0, r0\n\t"
-        "add    %1, %1, r0"
-        :
-        : "r" (gen_regsPC), "r" (my_pc)
-        : "r0", "r1");
-
- #else
- #error doJumpWord not implemented
- #endif
-
-#else
     signed short d16 = readword();
     gen_regsPC+=d16;
     my_pc+=d16;
-#endif
 }
 
 inline void skipJumpWord()
 {
-#ifdef TARGET_GP2X
- #ifdef GENREGSPC_AS_REG
-
-    asm volatile(
-        "add    %0, %0, #2\n\t"
-        "add    %1, %1, #2"
-        :
-        : "r" (gen_regsPC), "r" (my_pc)
-        :);
-
- #else
- #error skipJumpWord not implemented
- #endif
-
-#else
     gen_regsPC+=2;
     my_pc+=2;
-#endif
 }
 
 
@@ -1618,7 +743,6 @@ inline unsigned char srNC()
 #define valCondD srPL
 #define valCondE srNZ
 #define valCondF srNC
-
 
 inline void set_cregs()  //optimized by Thor
 {
@@ -2692,16 +1816,6 @@ int adcwMI10()
 
 inline unsigned char MySubB(unsigned char i, unsigned char j)
 {
-#if 1//speed hack
-    int res = i - j;
-	gen_regsSR &= ~(SF|ZF|HF|VF|NF|CF);
-    gen_regsSR |= SZtable[res & 0xFF] |                             // S/Z flag
-        ((i ^ res ^ j) & HF) |                  // H flag
-        (((j ^ i) & (i ^ res) & 0x80) >> 5) |       // V flag
-        ((res >> 8) & CF) | NF;               // C/N flag
-    return res;
-
-#else
 	// 100% correct
     unsigned char oldi = i;
 
@@ -2714,22 +1828,10 @@ inline unsigned char MySubB(unsigned char i, unsigned char j)
                  (((j^oldi) & (i^oldi) & 0x80) ? VF : 0) |
                  ((i>oldi) ? CF : 0);
     return i;
-#endif
 }
 
 inline unsigned short MySubW(unsigned short i, unsigned short j)
 {
-#if 1//speed hack
-    int res = i - j;
-	gen_regsSR &= ~(SF|ZF|HF|VF|NF|CF);
-    gen_regsSR |= ((res>>8) & SF) |
-		(Ztable[(res>>8) & 0xFF] & Ztable[res & 0xFF]) |
-        ((i ^ res ^ j) & HF) |                  // H flag
-        (((j ^ i) & (i ^ res) & 0x8000) >> 13) |       // V flag
-        ((res >> 16) & CF) | NF;               // C/N flag
-    return res;
-
-#else
 	unsigned short oldi = i;
 
     i-= j;
@@ -2741,23 +1843,10 @@ inline unsigned short MySubW(unsigned short i, unsigned short j)
                  (((j^oldi) & (i^oldi) & 0x8000) ? VF : 0) |
                  ((i>oldi) ? CF : 0);
     return i;
-#endif
 }
 
 inline unsigned long MySubL(unsigned long i, unsigned long j)
 {
-#if 1//speed hack
-    unsigned long oldi = i;
-
-    i-= j;
-	gen_regsSR &= ~(SF|ZF|HF|VF|NF|CF);
-    gen_regsSR |= ((i>>24) & SF) |
-	(Ztable[(i>>24) & 0xFF] & Ztable[(i>>16) & 0xFF] & Ztable[(i>>8) & 0xFF] & Ztable[i & 0xFF]) |
-                 (((j^oldi) & (i^oldi) & 0x80000000) ? VF : 0) |
-                 ((i>oldi) ? CF : 0) |
-				 NF;
-    return i;
-#else
     unsigned long oldi = i;
 
     i-= j;
@@ -2768,7 +1857,6 @@ inline unsigned long MySubL(unsigned long i, unsigned long j)
                  (((j^oldi) & (i^oldi) & 0x80000000) ? VF : 0) |
                  ((i>oldi) ? CF : 0);
     return i;
-#endif
 }
 
 int subRrB()
@@ -8873,8 +7961,35 @@ inline void tlcsTI0()
         timer0+= 1;
 }
 
+// TLCS900h stepping function
 inline int tlcs_step()
 {
+		
+// Debugger checks for any breakpoints or running debug instances
+#ifdef NEOGPC_DEBUGGER
+	// Check to see if our next PC is set to a breakpoint, if so break!
+	if ( g_tlcs900hDebugger.state() == DEBUGGER_RESUME )
+	{
+		// Resume and clear our debugger
+		g_tlcs900hDebugger.clear();
+	}
+	else if ( g_tlcs900hDebugger.state() == DEBUGGER_IDLE )
+	{
+		// Move through our breakpoint list
+		tlcs900hBreakpoint * breakList = g_tlcs900hDebugger.getBreakpointList();
+		unsigned long nextPC = gen_regsPC+1;
+		for ( int i = 0; i < 100; i++)
+		{
+			if( breakList[i].active == true && breakList[i].address == nextPC )
+			{
+				// We hit a breakpoint, break and pause!
+				g_tlcs900hDebugger.pause();
+				return 0;
+			}
+		}
+	}
+#endif
+
     int clocks = DMAstate;
 #ifdef TCLS900H_PROFILING
 
@@ -8918,6 +8033,7 @@ inline int tlcs_step()
         clocks+= 18;
     }
 
+	// Read the next byte and increment the PC
     opcode = readbyte();
 
     //printf("tlcs_step: PC=0x%X opcode=0x%X\n", gen_regsPC-1, opcode);
@@ -8928,6 +8044,7 @@ inline int tlcs_step()
     startTime = SDL_GetTicks();
 #endif
 
+	// Execute the opcode
     clocks+= instr_table[opcode]();
 
 #ifdef TCLS900H_PROFILING
@@ -8936,14 +8053,15 @@ inline int tlcs_step()
     profile[opcode].calls++;
 #endif
 
+	// Memory cycles can be changed by the instructions
     clocks+= memoryCycles;
 
     // Timer processing
     //tlcsTimers(clocks); //Flavor:  should it be (tlcsClockMulti*clocks)???
 
+	// Return the number of clocks we used
     return /*tlcsClockMulti * */ clocks;
 }
-
 
 //extern unsigned char *ngpScX;
 extern unsigned char *ngpScY;
@@ -8963,15 +8081,139 @@ inline void tlcs_execute(int cycles, int skipFrames)// skipFrames=how many frame
 void tlcs_execute(int cycles)
 #endif
 {
-    int elapsed;
+    
+// Debugger checks for a step command
+#ifdef NEOGPC_DEBUGGER
+	if ( g_tlcs900hDebugger.state() == DEBUGGER_PAUSE )
+	{
+		// Do nothing while we are paused
+		return;
+	}
+	// Did the user ask for a step? then step
+	else if ( g_tlcs900hDebugger.state() == DEBUGGER_STEP )
+	{
+		int elapsed;
+		int hCounter = ngOverflow;
+
+		// ignore cycles requested, give one TLCS900h step
+		elapsed = tlcs_step();
+
+		tlcsTimers(elapsed);
+		elapsed *= tlcsClockMulti;
+		soundStep(elapsed); // Z80 step
+
+		hCounter -= elapsed;
+		// Horizontal line happened
+		if ( hCounter < 0 )
+		{
+			graphicsBlit(true);
+			ngpSoundExecute();
+			hCounter+= 515; // Arbitrary hscan line count? 6144000 / 515?
+			if (*scanlineY < 151 || *scanlineY == 198)
+			{
+				// HBlank interrupt
+				if (tlcsMemReadByte(0x8000)&0x40)
+				{
+					tlcsTI0(); // also breakpoint this?? TI0?
+				}
+			}
+			else if (*scanlineY == 152)
+			{
+				// VBlank
+				if (tlcsMemReadByte(0x8000)&0x80)
+					tlcs_interrupt(2); // trigger interrupt
+			}
+		}
+
+		ngOverflow = hCounter; // we did not go over 6.144MHz in one step, so no overflow
+
+		// Pause our debugger again after a step
+		g_tlcs900hDebugger.pause();
+	}
+	else
+	{
+		int elapsed;
+		int hCounter = ngOverflow;
+
+		// Break out if we paused mid-cycle
+		while(cycles > 0 && g_tlcs900hDebugger.state() == DEBUGGER_IDLE)
+		{
+			// Where does 56 come from?? Max cycle count?
+			int maxc = 56; //turbo ? (515>>(tlcsClockMulti-1)) : 56;
+
+			// Emulation of TLCS900h happens here
+			elapsed = 0;
+			do
+			{
+				elapsed += tlcs_step();
+				// Did we hit a breakpoint mid-cycle?
+				if ( g_tlcs900hDebugger.state() == DEBUGGER_PAUSE )
+				{
+					break;
+				}
+			} 
+			while ( elapsed < maxc );
+
+			tlcsTimers(elapsed);
+			elapsed*=tlcsClockMulti;
+			soundStep(elapsed);
+
+			hCounter-= elapsed;
+			// *ngpScX = hCounter>>2;
+			if (hCounter < 0)
+			{
+				// time equivalent to 1 horizontal line has passed 
+			   //myGraphicsBlitLine(true);
+			   graphicsBlit(true); 
+
+				ngpSoundExecute();
+				hCounter+= 515;
+				// now check what needs to be done at the
+				// beginning of this new line
+				if (*scanlineY < 151 || *scanlineY == 198)
+				{
+					// HBlank
+					if (tlcsMemReadByte(0x8000)&0x40)
+						tlcsTI0(); // also breakpoint this?? TI0?
+				}
+				else if (*scanlineY == 152)
+				{
+					// VBlank
+					if (tlcsMemReadByte(0x8000)&0x80)
+						tlcs_interrupt(2);
+				}
+
+			}
+			cycles-= elapsed;
+		}
+		// Cycles is negative at this point
+		if ( cycles < 0 )
+		{
+			ngOverflow = hCounter + cycles;
+		}
+		// If cycles are left over
+		else
+		{
+			ngOverflow = hCounter;
+		}
+	}
+#else
+	int elapsed;
     int hCounter = ngOverflow;
 
 //    UpdateInputState();
-
     while(cycles > 0)
     {
+		// Where does 56 come from?? Max cycle count?
 		int maxc = 56; //turbo ? (515>>(tlcsClockMulti-1)) : 56;
-	   for (elapsed = tlcs_step();elapsed<maxc; elapsed += tlcs_step());
+
+		// Emulation of TLCS900h happens here
+		elapsed = 0;
+		do
+		{
+			elapsed += tlcs_step();
+		} 
+		while ( elapsed < maxc );
 
         tlcsTimers(elapsed);
         elapsed*=tlcsClockMulti;
@@ -9012,6 +8254,5 @@ void tlcs_execute(int cycles)
     //graphics_paint();  //paint the screen, if it's dirty
 
     //MHE used to sound update here!?!?
-
-    return;
+#endif
 }
