@@ -5838,44 +5838,10 @@ int retd()  // RETD d16    00001111 xxxxxxxx xxxxxxxx
 
 int reti()  // RETI     00000111
 {
-#ifdef TARGET_GP2X
-    register byte *gA asm("r4");
-    register unsigned long localXSP = gen_regsXSP;
-
-    gA = get_address(localXSP);
-    localXSP += 6;
-    gen_regsXSP = localXSP;
-
-
-    if(gA == 0)
-    {
-        gen_regsSR = gen_regsPC = 0;
-    }
-    else
-    {
-        asm volatile(
-            "ldrb %0, [%2], #1\n"
-            "ldrb r2, [%2], #1\n"
-            "orr %0, %0, r2, asl #8\n"
-            "bic r1,%2,#3 \n"
-            "ldmia r1,{r0,r3} \n"
-            "ands r1,%2,#3 \n"
-            "movne r2,r1,lsl #3 \n"
-            "movne r0,r0,lsr r2 \n"
-            "rsbne r1,r2,#32 \n"
-            "orrne r0,r0,r3,lsl r1\n"
-            "mov    %1,r0"
-        : "=r"(gen_regsSR), "=r"(gen_regsPC)
-                    : "r"(gA)
-                    : "r0", "r1","r2","r3");
-    }
-
-#else
     gen_regsSR = mem_readW(gen_regsXSP);
     gen_regsXSP+= 2;
     gen_regsPC = mem_readL(gen_regsXSP);
     gen_regsXSP+= 4;
-#endif
 
     my_pc = get_address(gen_regsPC);
     set_cregs();
@@ -6820,12 +6786,12 @@ int decodeC3()  //       (mem)         scr.B
     switch(reg&0x03)
     {
         case 0x00:
-        mem = *allregsL[reg];
-        retval = 5;
+			mem = *allregsL[reg];
+			retval = 5;
         break;
         case 0x01:
-        mem = *allregsL[reg]+(signed short)readword();
-        retval = 5;
+			mem = *allregsL[reg]+(signed short)readword();
+			retval = 5;
         break;
         case 0x02:
         break;

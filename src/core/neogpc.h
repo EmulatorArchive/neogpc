@@ -10,18 +10,25 @@
 #define NEOGPC_DEBUGGER
 #ifdef NEOGPC_DEBUGGER
 
-	#include "../cpu/tlcs900hdebugger.h"
-	
+	#include "../cpu/tlcs900hdebugger.h"	
+	#include <map>
+
 	class tlcs900hdebugger; // forward declare so we know this is accessible
 	extern tlcs900hdebugger g_tlcs900hDebugger;
 
 	int neogpc_setbreakpoint(unsigned int);
+	void neogpc_setbreakpointName(unsigned int, const char *);
+	char * neogpc_getbreakpointBuffer(unsigned int);
 	void neogpc_deletebreakpoint(int);
 	void neogpc_stepdebugger();
 	void neogpc_pausedebugger();
 	void neogpc_resumedebugger();
 	void neogpc_cleardebugger();
 
+	void neogpc_disassemble();
+	
+	// Do this in a more elegant fashion
+	std::map<unsigned long, char*> test_getlist();
 #endif
 
 //the number of frames we want to draw to the host's screen every second

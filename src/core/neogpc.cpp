@@ -115,6 +115,16 @@ int neogpc_setbreakpoint(unsigned int address)
 	return g_tlcs900hDebugger.setBreakpoint(address);
 }
 
+void neogpc_setbreakpointName(unsigned int idx, const char * name)
+{
+	g_tlcs900hDebugger.setBreakpointName(idx, name);
+}
+
+char * neogpc_getbreakpointBuffer(unsigned int idx)
+{
+	return g_tlcs900hDebugger.getBreakpointName(idx);
+}
+
 // remove the breakpoint
 void neogpc_deletebreakpoint(int index)
 {
@@ -144,6 +154,22 @@ void neogpc_cleardebugger()
 {
 	g_tlcs900hDebugger.clearBreakpoints();
 	g_tlcs900hDebugger.resume();
+}
+
+// Disassemble the ROM
+void neogpc_disassemble()
+{
+	unsigned long addr = 0x00200040; // 0x000000 - 0xFFFFFF
+	do
+	{
+		addr += g_tlcs900hDebugger.decodeTlcs900h(addr);
+	} while ( addr < 0x00400000 ); // detect 32-bit rom size
+}
+
+// Do this in a more elegant fashion
+std::map<unsigned long, char*> test_getlist()
+{
+	return g_tlcs900hDebugger.m_decodeList;
 }
 
 #endif

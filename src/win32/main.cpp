@@ -68,6 +68,13 @@ typedef enum {
 
 unsigned int m_emuState;
 
+// Uses Tokenize
+bool IsAllHex(char * must_be_hex)
+{
+	char copy_of_param [1024];
+	return (strtok (strcpy(copy_of_param, must_be_hex),"0123456789ABCDEFabcdef") == NULL);
+}
+
 // Open this file
 char szFile[100];
 HMENU hMenu;
@@ -137,13 +144,63 @@ INT_PTR CALLBACK TLCS900hProc(
   LPARAM lParam
 )
 {
+	char lpszPassword[1024]; // overflow, but you can't automate it
+	WORD cchPassword;
+	char * lpszCheck;
+	char listStr[16];
+	int addr, bpIdx;
     switch(uMsg)
     {
         case WM_COMMAND:
 			switch(LOWORD(wParam))
             {
 				case IDC_TLCS900HD_ADD_BREAKPOINT:
-					neogpc_setbreakpoint(0x0020016c);
+					// Get number of characters. 
+                    cchPassword = (WORD) SendDlgItemMessage(hwndDlg, 
+                                                            IDE_TLCS900HD_ADD_ADDRESS, 
+                                                            EM_LINELENGTH, 
+                                                            (WPARAM) 0, 
+                                                            (LPARAM) 0);
+
+                    // Put the number of characters into first word of buffer.
+					if ( cchPassword > 1024 )
+						cchPassword = (DWORD)1024;
+
+                    *((LPWORD)lpszPassword) = cchPassword;
+
+                    // Get the characters. 
+                    SendDlgItemMessage(hwndDlg, 
+                                       IDE_TLCS900HD_ADD_ADDRESS,
+                                       EM_GETLINE,
+                                       (WPARAM) 0,       // line 0 
+                                       (LPARAM) lpszPassword); 
+
+                    // Null-terminate the string. 
+                    lpszPassword[cchPassword] = 0;
+
+					// Format 0x0020016c
+					if ( strstr(lpszPassword, "0x") == lpszPassword )
+					{
+						lpszCheck = &(lpszPassword[2]);
+					}	 
+					else
+					{
+						lpszCheck = lpszPassword;
+					}
+
+					if ( IsAllHex(lpszCheck) && strlen(lpszCheck) <= 8 )
+					{
+						addr = strtol(lpszCheck, NULL, 16);
+						sprintf(listStr, "[%i] 0x%08X", 0, addr);
+						bpIdx = neogpc_setbreakpoint(addr); // try 0x0020016c
+						neogpc_setbreakpointName(bpIdx, (const char*)listStr);
+						SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_RESETCONTENT, 0, 0);
+						SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)neogpc_getbreakpointBuffer(bpIdx));
+					}
+					else
+					{
+						MessageBox(0, "Invalid Breakpoint Address.. Format: 0x0020016C or 0x20016C", "Alert", MB_OK);
+					}
 				break;
 				case IDC_TLCS900HD_REMOVE_BREAKPOINT:
 					neogpc_deletebreakpoint(0);
@@ -388,6 +445,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						{
 							g_tlcs900hActive = true;
 							setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger
+
+							// Temporary!
+							std::map<unsigned long, char*> tmpList = test_getlist();
+							
+							SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_RESETCONTENT, 0, 0);
+							for(std::map<unsigned long, char *>::iterator it = tmpList.begin(); it != tmpList.end(); it++)
+							{
+								SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(*it).second);
+							}
+
 							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
 							return TRUE;
 						}
@@ -536,6 +603,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			neogpc_init();
 
 			LOG("Rom loaded, NGPC loaded, lets rock and roll!");
+
+#ifdef NEOGPC_DEBUGGER
+			// If the debugger is on, disassemble our rom
+			neogpc_disassemble();
+#endif
 
 			m_emuState = EMU_ROM_RUNNING;
 			isRunning = true;
