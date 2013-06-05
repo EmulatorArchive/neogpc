@@ -144,6 +144,7 @@ INT_PTR CALLBACK TLCS900hProc(
   LPARAM lParam
 )
 {
+#ifdef NEOGPC_DEBUGGER
 	char lpszPassword[1024]; // overflow, but you can't automate it
 	WORD cchPassword;
 	char * lpszCheck;
@@ -228,6 +229,7 @@ INT_PTR CALLBACK TLCS900hProc(
 			int debug = 0;
 			break;
     }
+#endif
     return FALSE;
 }
 
@@ -438,27 +440,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					}
 				break;
 				case ID_DEBUG_TLCS900H:
+#ifdef NEOGPC_DEBUGGER
 					if ( g_tlcs900hActive == false )
 					{
 						g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), 0/*hwnd*/, TLCS900hProc);
 						if ( g_tlcs900hDebugHwnd != NULL )
 						{
 							g_tlcs900hActive = true;
-							setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger
+							//setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger
 
 							// Temporary!
-							std::map<unsigned long, char*> tmpList = test_getlist();
+							char ** tmpList = test_getlist();
 							
 							SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_RESETCONTENT, 0, 0);
-							for(std::map<unsigned long, char *>::iterator it = tmpList.begin(); it != tmpList.end(); it++)
+							for ( unsigned int i = 0; i < 0x7D; i++)
 							{
-								SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(*it).second);
+								if ( tmpList[i] != NULL )
+								{
+									SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(tmpList[i]));
+								}
 							}
 
 							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
 							return TRUE;
 						}
 					}
+#endif
 				break;
             }
             break;

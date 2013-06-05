@@ -78,11 +78,13 @@ void tlcs_execute(int cycles);
 #include "../core/neogpc.h"
 
 // Do we want to use the debugger?
-#define TLCS900H_DEBUGGER
+#ifdef NEOGPC_DEBUGGER
 
 #include "../cpu/tlcs900hdebugger.h"
 
 // Create our global tlcs900h debugger
 extern tlcs900hdebugger g_tlcs900hDebugger;
+
+#endif
 
 #endif // !defined(AFX_TLCS900H_H__41E77E01_8224_11D3_8644_00A0241D2A65__INCLUDED_)

@@ -17,12 +17,20 @@ enum {
 	TWO_BYTES,			// call16 #$2001
 	THREE_BYTES,		// jp24 #$200101
 	FOUR_BYTES,			// ldRIL #$04040404
-	DECODE_NONE,		// decodeC1,D1,E1
-	DECODE_ONE_BYTE,	// decodeC8,D8,E8
-	DECODE_N_BYTES,		// decodeC3
+	DECODE_INSTR,		// Decode80 - DecodeF5
 	NONE_THREE_MEM,		// 10111mmm
 	NONE_THREE_REG,		// 10001rrr
 	NONE_THREE_BITS		// SWI #5 11111xxx
+};
+
+char * reg_names[12] =
+{
+	"W", "A", "B", "C", "D", "E", "H", "L", "IX", "IY", "IZ", "SP"
+};
+
+char * xreg_names[8] = 
+{
+	"XWA", "XBC", "XDE", "XHL", "XIX", "XIY", "XIZ", "XSP"
 };
 
 // All instruction names for standard opcodes
@@ -87,66 +95,25 @@ int instr_names_readbytes[256] =
     TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
     
 	// Decode80-DecodeB8
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE,
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE,
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE,
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_NONE,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
 
     // decode has extra bytes (decodeC3,decodeD3,decodeE3)
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_ONE_BYTE, DECODE_NONE, DECODE_NONE, NONE, DECODE_NONE, // decodeC3
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_ONE_BYTE, DECODE_NONE, DECODE_NONE, NONE, DECODE_NONE, // decodeD3
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_ONE_BYTE, DECODE_NONE, DECODE_NONE, NONE, DECODE_NONE, // decodeE3
-    DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE, DECODE_ONE_BYTE,
-    DECODE_NONE, DECODE_NONE, DECODE_NONE, DECODE_ONE_BYTE, DECODE_NONE, DECODE_NONE, NONE, TWO_BYTES,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, DECODE_INSTR, // decodeC3
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, DECODE_INSTR, // decodeD3
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, DECODE_INSTR, // decodeE3
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
+    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, TWO_BYTES,
     NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS
 };
-
-/*
-int instr_names_timing[256] =
-{
-    1, 4, 4, 6, 4, 8, 5, 12,
-    5, 4, 6, 5, 2, 2, 9, 9,
-    2, 2, 2, 2, 3, 4, 2, 2,	
-    3, 4, 7, 7, 12, 12, 12, 1,
-    2, 2, 2, 2, 2, 2, 2, 2,
-    3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 3, 3, 3, 3,
-    5, 5, 5, 5, 5, 5, 5, 5,
-    //
-    5, 5, 5, 5, 5, 5, 5, 5,
-    4, 4, 4, 4, 4, 4, 4, 4,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    6, 6, 6, 6, 6, 6, 6, 6,
-    4, 4/8, "jrcc2", "jrcc3", "jrcc4", "jrcc5", "jrcc6", "jrcc7",
-    "jrcc8", "jrcc9", "jrccA", "jrccB", "jrccC", "jrccD", "jrccE", "jrccF",
-    "jrlcc0", "jrlcc1", "jrlcc2", "jrlcc3", "jrlcc4", "jrlcc5", "jrlcc6", "jrlcc7",
-    "jrlcc8", "jrlcc9", "jrlccA", "jrlccB", "jrlccC", "jrlccD", "jrlccE", "jrlccF",
-    //
-    "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80",
-    "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88",
-    "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90",
-    "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98",
-    "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0",
-    "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8",
-    "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0",
-    "decodeB8", "decodeB8", "decodeB8", "decodeBB", "decodeB8", "decodeB8", "decodeB8", "decodeB8",
-    //
-    "decodeC0", "decodeC1", "decodeC2", "decodeC3", "decodeC4", "decodeC5", "udef", "decodeC7",
-    "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8",
-    "decodeD0", "decodeD1", "decodeD2", "decodeD3", "decodeD4", "decodeD5", "udef", "decodeD7",
-    "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8",
-    "decodeE0", "decodeE1", "decodeE2", "decodeE3", "decodeE4", "decodeE5", "udef", "decodeE7",
-    "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8",
-    "decodeF0", "decodeF1", "decodeF2", "decodeF3", "decodeF4", "decodeF5", "udef", "ldx",
-    16, 16, 16, 16, 16, 16, 16, 16
-};
-*/
 
 // Decode80 opcodes
 char *instr_table80[256] =
@@ -186,6 +153,45 @@ char *instr_table80[256] =
     "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
     "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
     "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
+};
+
+int instr_table80_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
 };
 
 // Decode90 Opcodes
@@ -677,16 +683,22 @@ tlcs900hdebugger::tlcs900hdebugger(void)
 		m_breakpointList[i].active = false; // set all breakpoints to nothing
 		m_breakpointList[i].buf[0] = 0;
 	}
+
+	for ( unsigned int i = 0; i < 0x200000; i++)
+	{
+		m_decodeList[i] = NULL;
+	}
+
+
+	// cr1eate a page of character memory (speed hack)
+	bufPage = new char[0x200000 * MAX_INSTR_LEN];
 }
 
 // Destructor
 tlcs900hdebugger::~tlcs900hdebugger(void)
 {
-	// Clear all of our string memory
-	for (std::map<unsigned long, char*>::iterator it = m_decodeList.begin(); it != m_decodeList.end(); it++)
-	{
-		delete (*it).second;
-	}
+	// Delete our page
+	delete bufPage;
 }
 
 // Get the memory to the breakpoint list
@@ -812,19 +824,12 @@ unsigned char * tlcs900hdebugger::getCodePtr(unsigned long addr)
 
 // Decode the ROM at given address
 unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the current PC
-{
-	// Have we already decoded this instruction?
-	//std::map<unsigned long, char *>::iterator it = m_decodeList.find(addr);
-	//if ( it != m_decodeList.end() )
-	//{
-	//	return m_decodeList;
-	//}
-	
+{	
 	// How many bytes did we eat?
 	int bytesRead = 0;
 
 	// Create our instruction
-	char * instrBuf = new char[128];
+	char * instrBuf = &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
 
 	unsigned char * readBuf = getCodePtr(addr);
 	unsigned char opcode = readBuf[0];
@@ -836,22 +841,21 @@ unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the 
 	
 	switch(opcodeType) {
 	case NONE:
-		instrBuf = new char[128];
 		sprintf(instrBuf, "0x%06x: %s", addr, instr_names[opcode]);
-		m_decodeList[addr] = instrBuf;
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 1;
 	break;
 	case ONE_BYTE:
 		readByte[0] = readBuf[1];	// read 1 byte
 		sprintf(instrBuf, "0x%06x: %s $%02x", addr, instr_names[opcode], readByte[0]);
-		m_decodeList[addr] = instrBuf;
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 2;
 	break;
 	case TWO_BYTES:
 		readByte[0] = readBuf[1];
 		readByte[1] = readBuf[2];
 		sprintf(instrBuf, "0x%06x: %s $%02x%02x", addr, instr_names[opcode], readByte[1], readByte[0]);
-		m_decodeList[addr] = instrBuf;
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 3;
 	break;
 	case THREE_BYTES:
@@ -859,7 +863,7 @@ unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the 
 		readByte[1] = readBuf[2];
 		readByte[2] = readBuf[3];
 		sprintf(instrBuf, "0x%06x: %s $%02x%02x%02x", addr, instr_names[opcode], readByte[2], readByte[1], readByte[0]);
-		m_decodeList[addr] = instrBuf;
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 4;
 	break;
 	case FOUR_BYTES:
@@ -868,43 +872,418 @@ unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the 
 		readByte[2] = readBuf[3];
 		readByte[3] = readBuf[4];
 		sprintf(instrBuf, "0x%06x: %s $%02x%02x%02x%02x", addr, instr_names[opcode], readByte[3], readByte[2], readByte[1], readByte[0]);
-		m_decodeList[addr] = instrBuf;
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 5;
 	break;
-	// TODO: Decodes need to dive deeper!
-	case DECODE_NONE:
-		sprintf(instrBuf, "0x%06x: %s", addr, instr_names[opcode]);
-		m_decodeList[addr] = instrBuf;
-		bytesRead = 1;
-	break;
-	case DECODE_ONE_BYTE:
-		readByte[0] = readBuf[1];
-		sprintf(instrBuf, "0x%06x: %s $%02x", addr, instr_names[opcode], readByte[0]);
-		m_decodeList[addr] = instrBuf;
-		bytesRead = 2;
-	break;
-	case DECODE_N_BYTES:
-		readByte[0] = readBuf[1];
-		sprintf(instrBuf, "0x%06x: %s $%02x", addr, instr_names[opcode], readByte[0]);
-		m_decodeList[addr] = instrBuf;
-		bytesRead = 2;
+	case DECODE_INSTR:
+		bytesRead = decodeXX(addr, opcode);
 	break;
 	//case NONE_THREE_MEM,		// 10111mmm
 	//case NONE_THREE_REG,		// 10001rrr
 	case NONE_THREE_BITS:
 		readByte[0] = (opcode & 3); // 10001xxx
 		sprintf(instrBuf, "0x%06x: %s #$%02x", addr, instr_names[opcode], readByte[0]);
-		m_decodeList[addr] = instrBuf;
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 1;
 	break;
 	default:
-		sprintf(instrBuf, "0x%06x: INVALID", addr);
-		m_decodeList[addr] = instrBuf;
+		sprintf(instrBuf, "0x%06x: UNKNOWN/INVALID", addr);
+		m_decodeList[addr-0x200000] = instrBuf;
 		bytesRead = 1; // default unknown to 1
 		break;
 	};
 
 	return bytesRead;
+}
+
+// DecodeXX can decode any number of possible opcodes
+int tlcs900hdebugger::decodeXX(unsigned long addr, unsigned char opcode)
+{
+	if ( opcode >= 0x80 && opcode < 0x88 )
+	{
+		return decode80(addr, opcode);
+	}
+	else if ( opcode >= 0x88 && opcode < 0x90 )
+	{
+		return decode88(addr, opcode);
+	}
+	else if ( opcode >= 0x90 && opcode < 0x98 )
+	{
+		return decode90(addr, opcode);
+	}
+	else if ( opcode >= 0x98 && opcode < 0xA0 )
+	{
+		return decode98(addr, opcode);
+	}
+	else if ( opcode >= 0xA0 && opcode < 0xA8 )
+	{
+		return decodeA0(addr, opcode);
+	}
+	else if ( opcode >= 0xA8 && opcode < 0xB0 )
+	{
+		return decodeA8(addr, opcode);
+	}
+	else if ( opcode >= 0xB0 && opcode < 0xB8 )
+	{
+		return decodeB0(addr, opcode);
+	}
+	else if ( opcode >= 0xB8 && opcode < 0xC0 )
+	{
+		return decodeB8(addr, opcode);
+	}
+	else if ( opcode == 0xC0 )
+	{
+		return decodeC0(addr, opcode);
+	}
+	else if ( opcode == 0xC1 )
+	{
+		return decodeC1(addr, opcode);
+	}
+	else if ( opcode == 0xC2 )
+	{
+		return decodeC2(addr, opcode);
+	}
+	else if ( opcode == 0xC3 )
+	{
+		return decodeC3(addr, opcode);
+	}
+	else if ( opcode == 0xC4 )
+	{
+		return decodeC4(addr, opcode);
+	}
+	else if ( opcode == 0xC5 )
+	{
+		return decodeC5(addr, opcode);
+	}
+	else if ( opcode == 0xC7 )
+	{
+		return decodeC7(addr, opcode);
+	}
+	else if ( opcode >= 0xC8 && opcode < 0xD0 )
+	{
+		return decodeC8(addr, opcode);
+	}
+	else if ( opcode == 0xD0 )
+	{
+		return decodeD0(addr, opcode);
+	}
+	else if ( opcode == 0xD1 )
+	{
+		return decodeD1(addr, opcode);
+	}
+	else if ( opcode == 0xD2 )
+	{
+		return decodeD2(addr, opcode);
+	}
+	else if ( opcode == 0xD3 )
+	{
+		return decodeD3(addr, opcode);
+	}
+	else if ( opcode == 0xD4 )
+	{
+		return decodeD4(addr, opcode);
+	}
+	else if ( opcode == 0xD5 )
+	{
+		return decodeD5(addr, opcode);
+	}
+	else if ( opcode == 0xD7 )
+	{
+		return decodeD7(addr, opcode);
+	}
+	else if ( opcode >= 0xD8 && opcode < 0xE0 )
+	{
+		return decodeD8(addr, opcode);
+	}
+	else if ( opcode == 0xE0 )
+	{
+		return decodeE0(addr, opcode);
+	}
+	else if ( opcode == 0xE1 )
+	{
+		return decodeE1(addr, opcode);
+	}
+	else if ( opcode == 0xE2 )
+	{
+		return decodeE2(addr, opcode);
+	}
+	else if ( opcode == 0xE3 )
+	{
+		return decodeE3(addr, opcode);
+	}
+	else if ( opcode == 0xE4 )
+	{
+		return decodeE4(addr, opcode);
+	}
+	else if ( opcode == 0xE5 )
+	{
+		return decodeE5(addr, opcode);
+	}
+	else if ( opcode == 0xE7 )
+	{
+		return decodeE7(addr, opcode);
+	}
+	else if ( opcode >= 0xE8 && opcode < 0xF0 )
+	{
+		return decodeE8(addr, opcode);
+	}
+	else if ( opcode == 0xF0 )
+	{
+		return decodeF0(addr, opcode);
+	}
+	else if ( opcode == 0xF1 )
+	{
+		return decodeF1(addr, opcode);
+	}
+	else if ( opcode == 0xF2 )
+	{
+		return decodeF2(addr, opcode);
+	}
+	else if ( opcode == 0xF3 )
+	{
+		return decodeF3(addr, opcode);
+	}
+	else if ( opcode == 0xF4 )
+	{
+		return decodeF4(addr, opcode);
+	}
+	else if ( opcode == 0xF5 )
+	{
+		return decodeF5(addr, opcode);
+	}
+	else
+	{
+		char * instrBuf = &bufPage[(addr-0x200000) * MAX_INSTR_LEN];
+		sprintf(instrBuf, "0x%06x: UNKNOWN/INVALID", addr);
+		m_decodeList[addr-0x200000] = instrBuf;
+		return 1;
+	}
+}
+
+int tlcs900hdebugger::decode80(unsigned long addr, unsigned char opcode)
+{
+	// 0 - XWA
+	// 1 - XBC
+	// 2 - XDE
+	// 3 - XHL
+	// 4 - XIX
+	// 5 - XIY
+	// 6 - XIZ
+	// 7 - XSP
+	int readLen = 2; // 2 so far
+	char * xreg = xreg_names[opcode & 0x7];
+	unsigned char * readBuf = getCodePtr(addr);
+	unsigned char dcode = readBuf[1];
+	unsigned char byteBuf[2];
+	int decType = instr_table80_readbytes[dcode];
+	char * instrBuf = &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
+	switch(decType)
+	{
+	case NONE:
+		sprintf(instrBuf, "0x%06x: %s (%s)", addr, instr_table80[dcode], xreg);
+		m_decodeList[addr-0x200000] = instrBuf;
+	break;
+	case ONE_BYTE:
+		byteBuf[0] = readBuf[2];
+		sprintf(instrBuf, "0x%06x: %s (%s) $%02x", addr, instr_table80[dcode], xreg, byteBuf[0]);
+		m_decodeList[addr-0x200000] = instrBuf;
+		readLen += 1;
+	break;
+	case TWO_BYTES:
+		byteBuf[0] = readBuf[2];
+		byteBuf[1] = readBuf[3];
+		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x", addr, instr_table80[dcode], xreg, byteBuf[1], byteBuf[0]);
+		m_decodeList[addr-0x200000] = instrBuf;
+		readLen += 2;
+	break;
+	};
+
+	return readLen; // total bytes we pulled
+}
+
+int tlcs900hdebugger::decode88(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decode90(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decode98(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeA0(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeA8(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeB0(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeB8(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC0(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC1(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC2(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC3(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC4(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC5(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC7(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeC8(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD0(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD1(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD2(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD3(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD4(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD5(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD7(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeD8(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE0(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE1(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE2(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE3(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE4(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE5(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE7(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeE8(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeF0(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeF1(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeF2(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeF3(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeF4(unsigned long addr, unsigned char opcode)
+{
+	return 1;
+}
+
+int tlcs900hdebugger::decodeF5(unsigned long addr, unsigned char opcode)
+{
+	return 1;
 }
 
 #endif

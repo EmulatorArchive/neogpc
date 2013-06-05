@@ -167,7 +167,7 @@ void neogpc_disassemble()
 }
 
 // Do this in a more elegant fashion
-std::map<unsigned long, char*> test_getlist()
+char ** test_getlist()
 {
 	return g_tlcs900hDebugger.m_decodeList;
 }

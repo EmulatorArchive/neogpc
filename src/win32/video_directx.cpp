@@ -24,7 +24,7 @@ LPDIRECT3DTEXTURE9 g_screenTex = NULL;
 // Scale the sprite to match the window
 D3DXMATRIX		pTransform;
 D3DXVECTOR2		spritePos;
-D3DXVECTOR2		spriteCenter;
+D3DXVECTOR2		rotCenter;
 RECT srcRect = {0.0f, 0.0f, 256.0f, 256.0f};
 D3DXVECTOR3 vCenter( 0.0f, 0.0f, 0.0f );
 D3DXVECTOR3 vPosition( 0.0f, 0.0f, 0.0f );
@@ -57,9 +57,9 @@ BOOL dx9vid_init()
 	// Scale our matrix to match the screen
 	D3DXMatrixIdentity( &pTransform );
 	spritePos = D3DXVECTOR2( 0.f, 0.f );
-	spriteCenter = D3DXVECTOR2( 128.f, 128.f);
-	D3DXVECTOR2 vscale = D3DXVECTOR2( float(2.0f), float(2.0f));
-	D3DXMatrixTransformation2D( &pTransform, NULL, 0.0f, &vscale, &spriteCenter, 0.f, &spritePos );
+	rotCenter = D3DXVECTOR2( 0.f, 0.f);
+	D3DXVECTOR2 vscale = D3DXVECTOR2( float(3.0f), float(3.0f));
+	D3DXMatrixTransformation2D( &pTransform, NULL, 0.0f, &vscale, &rotCenter, 0.f, &spritePos );
 	g_screenSprite->SetTransform(&pTransform);
 
 	return TRUE;
@@ -91,12 +91,9 @@ BOOL dx9vid_update()
          unsigned short b = ((color&0x003E)>>1)*8;
          unsigned short g = ((color&0x07C0)>>6)*8;
          unsigned short r = ((color&0xF800)>>11)*8;
-         if ( color != 0 )
-         {
-            int debug = 0;
-         }
          pDst[y*256+x] =   (r<<16) | (g<<8) | b;  //b (4-bit)
-         //pDst[y*256+x] |=  g<<4;  //g (4-bit)
+         
+		 //pDst[y*256+x] |=  g<<4;  //g (4-bit)
          //pDst[y*256+x] |=  r<<8;  //b (4-bit)1
          //pDst[y*256+x] |= 0<<12; //x
       }
@@ -127,9 +124,9 @@ BOOL dx9vid_render()
 
 BOOL dx9vid_resize(int scale)
 {
-	D3DXVECTOR2 vscale = D3DXVECTOR2( float(2.0f), float(2.0f));
-	D3DXMatrixTransformation2D( &pTransform, NULL, 0.0f, &vscale, &spriteCenter, 0.f, &spritePos );
-	g_screenSprite->SetTransform(&pTransform);
+	//D3DXVECTOR2 vscale = D3DXVECTOR2( float(3.0f), float(3.0f));
+	//D3DXMatrixTransformation2D( &pTransform, NULL, 0.0f, &vscale, &rotCenter, 0.f, &spritePos );
+	//g_screenSprite->SetTransform(&pTransform);
 	
 	return TRUE;
 }
