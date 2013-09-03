@@ -74,7 +74,7 @@ char *instr_names[256] =
 };
 
 // How many bytes does each opcode read
-int instr_names_readbytes[256] =
+char instr_names_readbytes[256] =
 {
     NONE, NONE, NONE, NONE, NONE, NONE, ONE_BYTE, NONE,
     TWO_BYTES, ONE_BYTE, THREE_BYTES, TWO_BYTES, NONE, NONE, NONE, TWO_BYTES,
@@ -155,7 +155,7 @@ char *instr_table80[256] =
     "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
 };
 
-int instr_table80_readbytes[256] =
+char instr_table80_readbytes[256] =
 {
     NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
     NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
@@ -234,6 +234,45 @@ char *instr_table90[256] =
     "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
 };
 
+char instr_table90_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // Decode98 Opcodes
 char *instr_table98[256] =
 {
@@ -274,6 +313,45 @@ char *instr_table98[256] =
     "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
 };
 
+char instr_table98_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // DecodeA0 opcodes
 char *instr_tableA0[256] =
 {
@@ -291,7 +369,7 @@ char *instr_tableA0[256] =
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef ", "udef", "udef", "udef", "udef",
+    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     //
@@ -312,6 +390,45 @@ char *instr_tableA0[256] =
     "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
     "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
     "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
+};
+
+char instr_tableA0_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
 };
 
 // DecodeB0 opcodes
@@ -354,6 +471,45 @@ char *instr_tableB0[256] =
     "retcc8", "retcc9", "retccA", "retccB", "retccC", "retccD", "retccE", "retccF"
 };
 
+char instr_tableB0_readbytes[256] =
+{
+    ONE_BYTE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // DecodeB8 opcodes
 char *instr_tableB8[256] =
 {
@@ -392,6 +548,45 @@ char *instr_tableB8[256] =
     "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
+};
+
+char instr_tableB8_readbytes[256] =
+{
+    ONE_BYTE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
 };
 
 // DecodeC0 opcodes
@@ -434,6 +629,45 @@ char *instr_tableC0[256] =
     "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
 };
 
+char instr_tableC0_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // DecodeC8 opcodes
 char *instr_tableC8[256] =
 {
@@ -472,6 +706,45 @@ char *instr_tableC8[256] =
     "rlc4rB", "rrc4rB", "rl4rB", "rr4rB", "sla4rB", "sra4rB", "sll4rB", "srl4rB",
     "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB",
     "rlcArB", "rrcArB", "rlArB", "rrArB", "slaArB", "sraArB", "sllArB", "srlArB"
+};
+
+char instr_tableC8_readbytes[256] =
+{
+    NONE, NONE, NONE, ONE_BYTE, NONE, NONE, NONE, NONE,
+    NONE, NONE, ONE_BYTE, ONE_BYTE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, ONE_BYTE, NONE, ONE_BYTE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, ONE_BYTE, ONE_BYTE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
 };
 
 // DecodeD0 opcodes
@@ -514,6 +787,45 @@ char *instr_tableD0[256] =
     "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
 };
 
+char instr_tableD0_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // DecodeD8 opcodes
 char *instr_tableD8[256] =
 {
@@ -552,6 +864,45 @@ char *instr_tableD8[256] =
     "rlc4rW", "rrc4rW", "rl4rW", "rr4rW", "sla4rW", "sra4rW", "sll4rW", "srl4rW",
     "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW",
     "rlcArW", "rrcArW", "rlArW", "rrArW", "slaArW", "sraArW", "sllArW", "srlArW"
+};
+
+char instr_tableD8_readbytes[256] =
+{
+    NONE, NONE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE,
+    NONE, NONE, TWO_BYTES, TWO_BYTES, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE, NONE, NONE,
+    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, TWO_BYTES, TWO_BYTES,
+    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
 };
 
 // DecodeE0 opcodes
@@ -594,6 +945,45 @@ char *instr_tableE0[256] =
     "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
 };
 
+char instr_tableE0_readbytes[256] =
+{
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // DecodeE8 opcodes
 char *instr_tableE8[256] =
 {
@@ -634,6 +1024,45 @@ char *instr_tableE8[256] =
     "rlcArL", "rrcArL", "rlArL", "rrArL", "slaArL", "sraArL", "sllArL", "srlArL"
 };
 
+char instr_tableE8_readbytes[256] =
+{
+    NONE, NONE, NONE, FOUR_BYTES, NONE, NONE, NONE, NONE,
+    NONE, NONE, FOUR_BYTES, FOUR_BYTES, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, FOUR_BYTES, NONE, FOUR_BYTES, NONE, NONE, NONE,
+    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, FOUR_BYTES, FOUR_BYTES,
+    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+};
+
 // DecodeF0 opcodes
 char *instr_tableF0[256] =
 {
@@ -672,6 +1101,45 @@ char *instr_tableF0[256] =
     "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
     "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
+};
+
+char instr_tableF0_readbytes[256] =
+{
+    ONE_BYTE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    //
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
+    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
 };
 
 // Constructor
@@ -837,7 +1305,7 @@ unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the 
 	// Potential read bytes
 	unsigned char readByte[4];		// 8 bits [x4.. up to 32 bits]
 
-	unsigned int opcodeType = instr_names_readbytes[readBuf[0]];
+	unsigned int opcodeType = instr_names_readbytes[opcode];
 	
 	switch(opcodeType) {
 	case NONE:
@@ -899,157 +1367,268 @@ unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the 
 // DecodeXX can decode any number of possible opcodes
 int tlcs900hdebugger::decodeXX(unsigned long addr, unsigned char opcode)
 {
+	unsigned char * readBuf = getCodePtr(addr);
+	unsigned char reg = readBuf[1];
+
 	if ( opcode >= 0x80 && opcode < 0x88 )
 	{
-		return decode80(addr, opcode);
+		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
+		return decodeBytes(addr, opcode, instr_table80, NONE);
 	}
 	else if ( opcode >= 0x88 && opcode < 0x90 )
 	{
-		return decode88(addr, opcode);
+		// (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.B
+		return decodeBytes(addr, opcode, instr_table80, ONE_BYTE);
 	}
 	else if ( opcode >= 0x90 && opcode < 0x98 )
 	{
-		return decode90(addr, opcode);
+		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.W
+		return decodeBytes(addr, opcode, instr_table90, NONE);
 	}
 	else if ( opcode >= 0x98 && opcode < 0xA0 )
 	{
-		return decode98(addr, opcode);
+		// get one byte, then apply 98 (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.W
+		return decodeBytes(addr, opcode, instr_table90, ONE_BYTE);
 	}
 	else if ( opcode >= 0xA0 && opcode < 0xA8 )
 	{
-		return decodeA0(addr, opcode);
+		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.L
+		return decodeBytes(addr, opcode, instr_tableA0, NONE);
 	}
 	else if ( opcode >= 0xA8 && opcode < 0xB0 )
 	{
-		return decodeA8(addr, opcode);
+		// get one byte, then apply A0
+		// (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.L
+		return decodeBytes(addr, opcode, instr_tableA0, ONE_BYTE);
 	}
 	else if ( opcode >= 0xB0 && opcode < 0xB8 )
 	{
-		return decodeB0(addr, opcode);
+		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) dst
+		return decodeBytes(addr, opcode, instr_tableB0, NONE);
 	}
 	else if ( opcode >= 0xB8 && opcode < 0xC0 )
 	{
-		return decodeB8(addr, opcode);
+		// (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
+		return decodeBytes(addr, opcode, instr_tableB0, ONE_BYTE);
 	}
 	else if ( opcode == 0xC0 )
 	{
-		return decodeC0(addr, opcode);
+		// read one byte, then apply C0  (n)                scr.B
+		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
 	}
 	else if ( opcode == 0xC1 )
 	{
-		return decodeC1(addr, opcode);
+		// read one word, then apply C0   (nn)             scr.B
+		return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
 	}
 	else if ( opcode == 0xC2 )
 	{
-		return decodeC2(addr, opcode);
+		// read 3 bytes, then apply C0     (nnn)           scr.B
+		return decodeBytes(addr, opcode, instr_tableC0, THREE_BYTES);
 	}
 	else if ( opcode == 0xC3 )
 	{
-		return decodeC3(addr, opcode);
+		// read byte       (mem)         scr.B
+		switch(reg&0x03)
+		{
+			case 0x00:
+				return decodeBytes(addr, opcode, instr_tableC0, NONE);
+			break;
+			case 0x01:
+				return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
+			break;
+			case 0x02:
+				return decodeBytes(addr, opcode, instr_tableC0, NONE);
+			break;
+			case 0x03:
+			switch (reg)
+			{
+				case 0x03:
+					return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
+				break;
+				case 0x07:
+					return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
+				break;
+				case 0x13:
+					return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
+				break;
+				default:
+					return decodeBytes(addr, opcode, instr_tableC0, NONE);
+				break;
+			}
+		}
 	}
 	else if ( opcode == 0xC4 )
 	{
-		return decodeC4(addr, opcode);
+		// read 1 byte         (-xrr)       scr.B
+		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
 	}
 	else if ( opcode == 0xC5 )
 	{
-		return decodeC5(addr, opcode);
+		// read 1 byte           (xrr+)     scr.B
+		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
 	}
 	else if ( opcode == 0xC7 )
 	{
-		return decodeC7(addr, opcode);
+		// read 1 byte    r                reg.B
+		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
 	}
 	else if ( opcode >= 0xC8 && opcode < 0xD0 )
 	{
-		return decodeC8(addr, opcode);
+		// W  A  B  C  D  E  H  L  reg.B
+		return decodeBytes(addr, opcode, instr_tableC8, NONE);
 	}
 	else if ( opcode == 0xD0 )
 	{
-		return decodeD0(addr, opcode);
+		// (n)                scr.W
+		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
 	}
 	else if ( opcode == 0xD1 )
 	{
-		return decodeD1(addr, opcode);
+		//   (nn)             scr.W
+		return decodeBytes(addr, opcode, instr_tableD0, TWO_BYTES);
 	}
 	else if ( opcode == 0xD2 )
 	{
-		return decodeD2(addr, opcode);
+		//     (nnn)           scr.W
+		return decodeBytes(addr, opcode, instr_tableD0, THREE_BYTES);
 	}
 	else if ( opcode == 0xD3 )
-	{
-		return decodeD3(addr, opcode);
+	{ 
+		//       (mem)         scr.W
+		// read byte
+		// switch(byte)
+		//  0x0:
+		//    0 bytes
+		//  0x1:
+		//    2 bytes
+		//  0x2:
+		//    0 bytes (do nothing)
+		//  0x3:
+		//    2 bytes
+		//  0x7:
+		//    2 bytes
+		//  0x13:
+		//    2 bytes
+		return decodeBytes(addr, opcode, instr_tableD0, NONE); // FIX THIS
 	}
 	else if ( opcode == 0xD4 )
 	{
-		return decodeD4(addr, opcode);
+		//         (-xrr)       scr.W
+		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
 	}
 	else if ( opcode == 0xD5 )
 	{
-		return decodeD5(addr, opcode);
+		//           (xrr+)     scr.W
+		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
 	}
 	else if ( opcode == 0xD7 )
 	{
-		return decodeD7(addr, opcode);
+		// r                reg.W
+		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
 	}
 	else if ( opcode >= 0xD8 && opcode < 0xE0 )
 	{
-		return decodeD8(addr, opcode);
+		// WA  BC  DE  HL  IX  IY  IZ  SP  reg.W
+		return decodeBytes(addr, opcode, instr_tableD8, NONE);
 	}
 	else if ( opcode == 0xE0 )
 	{
-		return decodeE0(addr, opcode);
+		// (n)                scr.L
+		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
 	}
 	else if ( opcode == 0xE1 )
 	{
-		return decodeE1(addr, opcode);
+		//   (nn)             scr.L
+		return decodeBytes(addr, opcode, instr_tableE0, TWO_BYTES);
 	}
 	else if ( opcode == 0xE2 )
 	{
-		return decodeE2(addr, opcode);
+		//     (nnn)           scr.L
+		return decodeBytes(addr, opcode, instr_tableE0, THREE_BYTES);
 	}
 	else if ( opcode == 0xE3 )
 	{
-		return decodeE3(addr, opcode);
+		//       (mem)         scr.L
+		// read byte
+		// switch(byte)
+		//  0x0:
+		//    0 bytes
+		//  0x1:
+		//    2 bytes
+		//  0x2:
+		//    0 bytes (do nothing)
+		//  0x3:
+		//    2 bytes
+		//  0x7:
+		//    2 bytes
+		//  0x13:
+		//    2 bytes
+		return decodeBytes(addr, opcode, instr_tableE0, NONE); // FIX THIS
 	}
 	else if ( opcode == 0xE4 )
 	{
-		return decodeE4(addr, opcode);
+		//         (-xrr)       scr.L
+		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
 	}
 	else if ( opcode == 0xE5 )
 	{
-		return decodeE5(addr, opcode);
+		//           (xrr+)     scr.L
+		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
 	}
 	else if ( opcode == 0xE7 )
 	{
-		return decodeE7(addr, opcode);
+		// r                reg.L
+		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
 	}
 	else if ( opcode >= 0xE8 && opcode < 0xF0 )
 	{
-		return decodeE8(addr, opcode);
+		// XWA  XBC  XDE  XHL  XIX  XIY  XIZ  XSP  reg.L
+		return decodeBytes(addr, opcode, instr_tableE8, NONE);
 	}
 	else if ( opcode == 0xF0 )
 	{
-		return decodeF0(addr, opcode);
+		// (n)                dst
+		return decodeBytes(addr, opcode, instr_tableF0, ONE_BYTE);
 	}
 	else if ( opcode == 0xF1 )
 	{
-		return decodeF1(addr, opcode);
+		//   (nn)             dst
+		return decodeBytes(addr, opcode, instr_tableF0, TWO_BYTES);
 	}
 	else if ( opcode == 0xF2 )
 	{
-		return decodeF2(addr, opcode);
+		//     (nnn)           dst
+		return decodeBytes(addr, opcode, instr_tableF0, THREE_BYTES);
 	}
 	else if ( opcode == 0xF3 )
 	{
-		return decodeF3(addr, opcode);
+		//       (mem)         dst
+		// read byte
+		// switch(byte)
+		//  0x0:
+		//    0 bytes
+		//  0x1:
+		//    2 bytes
+		//  0x2:
+		//    0 bytes (do nothing)
+		//  0x3:
+		//    2 bytes
+		//  0x7:
+		//    2 bytes
+		//  0x13:
+		//    2 bytes
+		return decodeBytes(addr, opcode, instr_tableF0, NONE); // FIX THIS
 	}
 	else if ( opcode == 0xF4 )
 	{
-		return decodeF4(addr, opcode);
+		//         (-xrr)       dst
+		return decodeBytes(addr, opcode, instr_tableF0, ONE_BYTE);
 	}
 	else if ( opcode == 0xF5 )
 	{
-		return decodeF5(addr, opcode);
+		//           (xrr+)     dst
+		return decodeBytes(addr, opcode, instr_tableF0, ONE_BYTE);
 	}
 	else
 	{
@@ -1060,230 +1639,67 @@ int tlcs900hdebugger::decodeXX(unsigned long addr, unsigned char opcode)
 	}
 }
 
-int tlcs900hdebugger::decode80(unsigned long addr, unsigned char opcode)
+int tlcs900hdebugger::decodeBytes(unsigned long addr, unsigned char opcode, char ** instr_tableXX_readbytes, unsigned char setLastByteSize)
 {
-	// 0 - XWA
-	// 1 - XBC
-	// 2 - XDE
-	// 3 - XHL
-	// 4 - XIX
-	// 5 - XIY
-	// 6 - XIZ
-	// 7 - XSP
+	if ( addr & 0x1 ) // not word aligned
+	{
+		//mem = *(addr)
+		//lastbyte = *(addr+1)
+	}
+	else
+	{
+		//mem = *(addr)&0xFFFF
+		//lastbyte = mem>>8
+	}
+
+	// 0 - XWA, 1 - XBC, 2 - XDE, 3 - XHL, 4 - XIX, 5 - XIY, 6 - XIZ, 7 - XSP
 	int readLen = 2; // 2 so far
-	char * xreg = xreg_names[opcode & 0x7];
+	
 	unsigned char * readBuf = getCodePtr(addr);
-	unsigned char dcode = readBuf[1];
-	unsigned char byteBuf[2];
-	int decType = instr_table80_readbytes[dcode];
+	unsigned char dcode = readBuf[setLastByteSize+1];
+	char * xreg = xreg_names[dcode & 0x7];
+	unsigned char byteBuf[4];
+	//int decType = instr_tableXX_readbytes[dcode];
 	char * instrBuf = &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
-	switch(decType)
+	switch(setLastByteSize)
 	{
 	case NONE:
-		sprintf(instrBuf, "0x%06x: %s (%s)", addr, instr_table80[dcode], xreg);
+		sprintf(instrBuf, "0x%06x: %s (%s)", addr, instr_tableXX_readbytes[dcode], xreg);
 		m_decodeList[addr-0x200000] = instrBuf;
 	break;
 	case ONE_BYTE:
-		byteBuf[0] = readBuf[2];
-		sprintf(instrBuf, "0x%06x: %s (%s) $%02x", addr, instr_table80[dcode], xreg, byteBuf[0]);
+		byteBuf[0] = readBuf[1];
+		sprintf(instrBuf, "0x%06x: %s (%s) $%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[0]);
 		m_decodeList[addr-0x200000] = instrBuf;
 		readLen += 1;
 	break;
 	case TWO_BYTES:
-		byteBuf[0] = readBuf[2];
-		byteBuf[1] = readBuf[3];
-		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x", addr, instr_table80[dcode], xreg, byteBuf[1], byteBuf[0]);
+		byteBuf[0] = readBuf[1];
+		byteBuf[1] = readBuf[2];
+		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[1], byteBuf[0]);
 		m_decodeList[addr-0x200000] = instrBuf;
 		readLen += 2;
+	break;
+	case THREE_BYTES:
+		byteBuf[0] = readBuf[1];
+		byteBuf[1] = readBuf[2];
+		byteBuf[2] = readBuf[3];
+		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[2], byteBuf[1], byteBuf[0]);
+		m_decodeList[addr-0x200000] = instrBuf;
+		readLen += 3;
+	break;
+	case FOUR_BYTES:
+		byteBuf[0] = readBuf[1];
+		byteBuf[1] = readBuf[2];
+		byteBuf[2] = readBuf[3];
+		byteBuf[3] = readBuf[4];
+		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x%02x%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[3], byteBuf[2], byteBuf[1], byteBuf[0]);
+		m_decodeList[addr-0x200000] = instrBuf;
+		readLen += 4;
 	break;
 	};
 
 	return readLen; // total bytes we pulled
-}
-
-int tlcs900hdebugger::decode88(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decode90(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decode98(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeA0(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeA8(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeB0(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeB8(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC0(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC1(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC2(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC3(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC4(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC5(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC7(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeC8(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD0(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD1(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD2(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD3(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD4(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD5(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD7(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeD8(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE0(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE1(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE2(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE3(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE4(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE5(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE7(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeE8(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeF0(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeF1(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeF2(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeF3(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeF4(unsigned long addr, unsigned char opcode)
-{
-	return 1;
-}
-
-int tlcs900hdebugger::decodeF5(unsigned long addr, unsigned char opcode)
-{
-	return 1;
 }
 
 #endif

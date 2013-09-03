@@ -159,7 +159,7 @@ void neogpc_cleardebugger()
 // Disassemble the ROM
 void neogpc_disassemble()
 {
-	unsigned long addr = 0x00200040; // 0x000000 - 0xFFFFFF
+	unsigned long addr = g_currentRom->startPC; //0x00200040; // 0x000000 - 0xFFFFFF
 	do
 	{
 		addr += g_tlcs900hDebugger.decodeTlcs900h(addr);
