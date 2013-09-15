@@ -26,9 +26,8 @@
 	void neogpc_cleardebugger();
 
 	void neogpc_disassemble();
-	
-	// Do this in a more elegant fashion
-	char ** test_getlist();
+	char * neogpc_asmprint(unsigned int);
+	int neogpc_asminc(unsigned int);
 #endif
 
 //the number of frames we want to draw to the host's screen every second

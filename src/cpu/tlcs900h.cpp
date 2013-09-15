@@ -6737,16 +6737,6 @@ int decodeB8()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+
     return 2 + decode_tableB8[lastbyte]();
 }
 
-int decodeBB()  // (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
-{
-    mem = (*cregsL[opcode&7])+(signed char)readbyteSetLastbyte();
-    //lastbyte = readbyte();
-#ifdef TCLS900H_PROFILING
-    profile[0xb8].decode[lastbyte]++;
-#endif
-    return 2 + decode_tableB8[lastbyte]();
-}
-
 int decodeC0()  // (n)                scr.B
 {
     mem = readbyteSetLastbyte();
@@ -7265,7 +7255,7 @@ int (*instr_table[256])()=
         decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0, decodeA0,
         decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8, decodeA8,
         decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0, decodeB0,
-        decodeB8, decodeB8, decodeB8, decodeBB, decodeB8, decodeB8, decodeB8, decodeB8,
+        decodeB8, decodeB8, decodeB8, decodeB8, decodeB8, decodeB8, decodeB8, decodeB8,
         //
         decodeC0, decodeC1, decodeC2, decodeC3, decodeC4, decodeC5, udef,  decodeC7,
         decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8, decodeC8,

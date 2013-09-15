@@ -23,1124 +23,356 @@ enum {
 	NONE_THREE_BITS		// SWI #5 11111xxx
 };
 
-char * reg_names[12] =
-{
-	"W", "A", "B", "C", "D", "E", "H", "L", "IX", "IY", "IZ", "SP"
+enum opcodes {
+	LD=0,	LDW,  PUSH,	PUSHW,  POP,	POPW,   LDA,	  LDAR,
+	EX,		MIRR, LDI,  LDIW,	  LDIR, LDIRW,	LDD,	  LDDW,
+  LDDR, LDDRW,CPI,	CPIR,	  CPD,	CPDR, 	ADD,	  ADDW,
+  ADC,	ADCW, SUB,	SUBW,   SBC,	SBCW,   CP,     CPW,
+  INC,  INCW,	DEC,  DECW,	  NEG,  EXTZ,	  EXTS,	  DAA,
+	PAA,	MUL,	MULS,	DIV,	  DIVS,	MULA,	  MINC1,  MINC2,
+  MINC4,MDEC1,MDEC2,MDEC4,	AND,	ANDW,   OR,     ORW,
+  XOR,  XORW,	CPL,  LDCF,	  STCF,	ANDCF,	ORCF,	  XORCF,
+  RCF,	SCF,	CCF,	ZCF,	  BIT,	RES,	  SET,	  CHG,
+  TSET,	BS1F, BS1B,	NOP,	  EI,		DI,		  SWI,	  HALT,
+  LDC,	LDX,  LINK,	UNLK,	  LDF,  INCF,   DECF,	  SCC,
+  RLC,	RLCW, RRC, RRCW, RL, RLW,  RR, RRW,
+  SLA, SLAW, SRA, SRAW, SLL, SLLW,  SRL, SRLW,
+  RLD,	RRD,  JP,	  JR,	    JRL,  CALL,   CALR,	  DJNZ,
+  RET,	RETD, RETI,
+  INVALID
 };
 
-char * xreg_names[8] = 
-{
-	"XWA", "XBC", "XDE", "XHL", "XIX", "XIY", "XIZ", "XSP"
+enum maddressingmodes {
+	ARI_XWA=0,ARI_XBC,ARI_XDE,ARI_XHL,ARI_XIX,ARI_XIY,ARI_XIZ,ARI_XSP,
+	ARID_XWA,ARID_XBC,ARID_XDE,ARID_XHL,ARID_XIX,ARID_XIY,ARID_XIZ,ARID_XSP,
+	ABS_B,ABS_W,ABS_L,
+	ARI,
+	ARI_PD,ARI_PI
 };
 
-// All instruction names for standard opcodes
-char *instr_names[256] =
-{
-    "nop", "normal", "pushsr", "popsr", "tmax", "halt", "ei", "reti",
-    "ld8I", "pushI", "ldw8I", "pushwI", "incf", "decf", "ret", "retd",
-    "rcf", "scf", "ccf", "zcf", "pushA", "popA", "exFF", "ldf",
-    "pushF", "popF", "jp16", "jp24", "call16", "call24", "calr", "udef",
-    "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB", "ldRIB",
-    "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW", "pushRW",
-    "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW", "ldRIW",
-    "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL", "pushRL",
-    //
-    "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL", "ldRIL",
-    "popRW", "popRW", "popRW", "popRW", "popRW", "popRW", "popRW", "popRW",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "popRL", "popRL", "popRL", "popRL", "popRL", "popRL", "popRL", "popRL",
-    "jrcc0", "jrcc1", "jrcc2", "jrcc3", "jrcc4", "jrcc5", "jrcc6", "jrcc7",
-    "jrcc8", "jrcc9", "jrccA", "jrccB", "jrccC", "jrccD", "jrccE", "jrccF",
-    "jrlcc0", "jrlcc1", "jrlcc2", "jrlcc3", "jrlcc4", "jrlcc5", "jrlcc6", "jrlcc7",
-    "jrlcc8", "jrlcc9", "jrlccA", "jrlccB", "jrlccC", "jrlccD", "jrlccE", "jrlccF",
-    //
-    "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80", "decode80",
-    "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88", "decode88",
-    "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90", "decode90",
-    "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98", "decode98",
-    "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0", "decodeA0",
-    "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8", "decodeA8",
-    "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0", "decodeB0",
-    "decodeB8", "decodeB8", "decodeB8", "decodeBB", "decodeB8", "decodeB8", "decodeB8", "decodeB8",
-    //
-    "decodeC0", "decodeC1", "decodeC2", "decodeC3", "decodeC4", "decodeC5", "udef", "decodeC7",
-    "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8", "decodeC8",
-    "decodeD0", "decodeD1", "decodeD2", "decodeD3", "decodeD4", "decodeD5", "udef", "decodeD7",
-    "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8", "decodeD8",
-    "decodeE0", "decodeE1", "decodeE2", "decodeE3", "decodeE4", "decodeE5", "udef", "decodeE7",
-    "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8", "decodeE8",
-    "decodeF0", "decodeF1", "decodeF2", "decodeF3", "decodeF4", "decodeF5", "udef", "ldx",
-    "swi", "swi", "swi", "swi", "swi", "swi", "swi", "swi"
+enum output_types {
+  OPT_1_0_0, OPT_1_1_0, OPT_1_1_1, OPT_1_1_2, OPT_1_2_0, OPT_1_3_0,
+  OPT_2_1_2, OPT_2_0_0, OPT_1_n_1, OPT_1_n_1_1, OPT_1_n_1_2,
+  OPT_1_n_2, OPT_1_n_1_4, OPT_1_4_0, OPT_1_1_1_1_1_1
 };
 
-// How many bytes does each opcode read
-char instr_names_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, ONE_BYTE, NONE,
-    TWO_BYTES, ONE_BYTE, THREE_BYTES, TWO_BYTES, NONE, NONE, NONE, TWO_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, ONE_BYTE,
-    NONE, NONE, TWO_BYTES, THREE_BYTES, TWO_BYTES, THREE_BYTES, TWO_BYTES, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
-    
-	// Decode80-DecodeB8
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-
-    // decode has extra bytes (decodeC3,decodeD3,decodeE3)
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, DECODE_INSTR, // decodeC3
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, DECODE_INSTR, // decodeD3
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, DECODE_INSTR, // decodeE3
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR,
-    DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, DECODE_INSTR, NONE, TWO_BYTES,
-    NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS, NONE_THREE_BITS
+char *opcode_names[] = {
+  "LD",   "LDW",  "PUSH",	"PUSHW",  "POP",	  "POPW",   "LDA",	  "LDAR",
+	"EX",   "MIRR", "LDI",	"LDIW",   "LDIR",	  "LDIRW",  "LDD",    "LDDW",
+  "LDDR", "LDDRW","CPI",	"CPIR",	  "CPD",	  "CPDR", 	"ADD",	  "ADDW",
+  "ADC",	"ADCW", "SUB",  "SUBW", 	"SBC",    "SBCW",   "CP",     "CPW",
+  "INC",  "INCW", "DEC",  "DECW", 	"NEG",  	"EXTZ",	  "EXTS",	  "DAA",
+  "PAA",  "MUL",  "MULS", "DIV",    "DIVS",   "MULA",   "MINC1",  "MINC2",
+  "MINC4","MDEC1","MDEC2","MDEC4",  "AND",	  "ANDW",   "OR",     "ORW",
+  "XOR",  "XORW", "CPL",  "LDCF",   "STCF",   "ANDCF",  "ORCF",	  "XORCF",
+  "RCF",  "SCF",  "CCF",  "ZCF",    "BIT",    "RES",    "SET",    "CHG",
+  "TSET", "BS1F", "BS1B", "NOP",    "EI",     "DI",     "SWI",    "HALT",
+  "LDC",  "LDX",  "LINK",	"UNLK",	  "LDF",	  "INCF",   "DECF",   "SCC",
+  "RLC",  "RLCW", "RRC",  "RRCW", "RL", "RLW",  "RR", "RRW",
+  "SLA", "SLAW", "SRA", "SRAW", "SLL", "SLLW", "SRL", "SRLW",
+  "RLD",	"RRD",  "JP",   "JR",	    "JRL",	  "CALL",   "CALR",	  "DJNZ",
+  "RET",	"RETD",   "RETI",
+  "INVALID"
 };
 
-// Decode80 opcodes
-char *instr_table80[256] =
-{
-    "udef", "udef", "udef", "udef", "pushM00", "udef", "rld00", "rrd00",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldi", "ldir", "ldd", "lddr", "cpiB", "cpirB", "cpdB", "cpdrB",
-    "udef", "ld16M00", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00",
-    "addMI00", "adcMI00", "subMI00", "sbcMI00", "andMI00", "xorMI00", "orMI00", "cpMI00",
-    //
-    "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00",
-    "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00",
-    "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00",
-    "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00",
-    "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00",
-    "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "rlcM00", "rrcM00", "rlM00", "rrM00", "slaM00", "sraM00", "sllM00", "srlM00",
-    //
-    "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00",
-    "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00",
-    "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00",
-    "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00",
-    "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00",
-    "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00",
-    "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00",
-    "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00",
-    //
-    "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00",
-    "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00",
-    "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00",
-    "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00",
-    "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00",
-    "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
-    "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
-    "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
+char *cr_names[] = {
+    "DMAS0","?","?","?",
+    "DMAS1","?","?","?",
+    "DMAS2","?","?","?",
+    "DMAS3","?","?","?",
+    "DMAD0","?","?","?",
+    "DMAD1","?","?","?",
+    "DMAD2","?","?","?",
+    "DMAD3","?","?","?",
+    "DMAC0","?","DMAM0","?",
+    "DMAC1","?","DMAM1","?",
+    "DMAC2","?","DMAM2","?",
+    "DMAC3","?","DMAM3","?",
+    "INTNEST","?","?","?"
 };
 
-char instr_table80_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+char *cc_names[] = {
+    "F",    "LT",
+    "LE",   "ULE",
+    "PE",   "MI",
+    "EQ/Z", "C/ULT",
+    "",      "GE",
+    "GT",   "UGT",
+    "PO",   "PL",
+    "NE/NZ","NC/UGE"
 };
 
-// Decode90 Opcodes
-char *instr_table90[256] =
-{
-    "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldiw", "ldirw", "lddw", "lddrw", "cpiW", "cpirW", "cpdW", "cpdrW",
-    "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-    "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-    //
-    "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-    "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-    "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-    "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-    "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-    "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-    //
-    "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-    "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-    "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-    "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-    "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-    "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-    "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-    "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-    //
-    "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-    "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-    "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-    "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-    "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-    "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-    "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-    "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
+char *R8_names[] = {
+    "W","A","B","C","D","E","H","L",
 };
 
-char instr_table90_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+char *R16_names[] = {
+    "WA","BC","DE","HL","IX","IY","IZ","SP",
 };
 
-// Decode98 Opcodes
-char *instr_table98[256] =
-{
-    "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-    "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-    //
-    "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-    "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-    "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-    "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-    "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-    "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-    //
-    "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-    "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-    "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-    "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-    "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-    "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-    "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-    "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-    //
-    "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-    "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-    "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-    "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-    "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-    "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-    "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-    "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
+char *R32_names[] = {
+    "XWA","XBC","XDE","XhL","XIX","XIY","XIZ","XSP",
 };
 
-char instr_table98_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+char *addr_names[] = {
+    "(XWA)","(XBC)","(XDE)","(XhL)","(XIX)","(XIY)","(XIZ)","(XSP)",
+    "(XWA+","(XBC+","(XDE+","(XhL+","(XIX+","(XIY+","(XIZ+","(XSP+",
+    "","","",
+    "","","","","",""
 };
 
-// DecodeA0 opcodes
-char *instr_tableA0[256] =
-{
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20",
-    "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20",
-    "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20",
-    "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20",
-    "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20",
-    "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20",
-    "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20",
-    "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20",
-    //
-    "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20",
-    "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20",
-    "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20",
-    "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20",
-    "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20",
-    "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
-    "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
-    "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
+char *r8_names[] = {
+    "RA0","RW0","QA0","QW0",
+    "RC0","RB0","QC0","QB0",
+    "RE0","RD0","QE0","QD0",
+    "RL0","RH0","QL0","QH0",
+    "RA1","RW1","QA1","QW1",
+    "RC1","RB1","QC1","QB1",
+    "RE1","RD1","QE1","QD1",
+    "RL1","RH1","QL1","QH1",
+    "RA2","RW2","QA2","QW2",
+    "RC2","RB2","QC2","QB2",
+    "RE2","RD2","QE2","QD2",
+    "RL2","RH2","QL2","QH2",
+    "RA3","RW3","QA3","QW3",
+    "RC3","RB3","QC3","QB3",
+    "RE3","RD3","QE3","QD3",
+    "RL3","RH3","QL3","QH3",
+
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+
+    "A'","W'","QA'","QW'",
+    "C'","B'","QC'","QB'",
+    "E'","D'","QE'","QD'",
+    "L'","H'","QL'","QH'",
+
+    "A","W","QA","QW",
+    "C","B","QC","QB",
+    "E","D","QE","QD",
+    "L","H","QL","QH",
+
+    "IXL","IXh","QIXL","QIXh",
+    "IYL","IYH","QIYL","QIYH",
+    "IZL","IZH","QIZL","QIZH",
+    "SPL","SPH","QSPL","QSPH",
 };
 
-char instr_tableA0_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
+char *r16_names[] = {
+    "RWA0","?","QWA0","?",
+    "RBC0","?","QBC0","?",
+    "RDE0","?","QDE0","?",
+    "RHL0","?","QHL0","?",
+    "RWA1","?","QWA1","?",
+    "RBC1","?","QBC1","?",
+    "RDE1","?","QDE1","?",
+    "RHL1","?","QHL1","?",
+    "RWA2","?","QWA2","?",
+    "RBC2","?","QBC2","?",
+    "RDE2","?","QDE2","?",
+    "RHL2","?","QHL2","?",
+    "RWA3","?","QWA3","?",
+    "RBC3","?","QBC3","?",
+    "RDE3","?","QDE3","?",
+    "RHL3","?","QHL3","?",
+
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+
+    "WA'","?","QWA'","?",
+    "BC'","?","QBC'","?",
+    "DE'","?","QDE'","?",
+    "HL'","?","QHL'","?",
+
+    "WA","?","QWA","?",
+    "BC","?","QBC","?",
+    "DE","?","QDE","?",
+    "HL","?","QHL","?",
+
+    "IX","?","QIX","?",
+    "IY","?","QIY","?",
+    "IZ","?","QIZ","?",
+    "SP","?","QSP","?",
 };
 
-// DecodeB0 opcodes
-char *instr_tableB0[256] =
-{
-    "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-    "udef", "udef", "udef", "udef", "udef ", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-    "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-    "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-    "udef", "udef", "udef ", "udef", "udef", "udef", "udef", "udef",
-    "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef ", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-    "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-    "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-    "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-    "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-    "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-    "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-    "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-    //
-    "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-    "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-    "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-    "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-    "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-    "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-    "retcc0", "retcc1", "retcc2", "retcc3", "retcc4", "retcc5", "retcc6", "retcc7",
-    "retcc8", "retcc9", "retccA", "retccB", "retccC", "retccD", "retccE", "retccF"
+
+char *r32_names[] = {
+    "XWA0","?","?","?",
+    "XBC0","?","?","?",
+    "XDE0","?","?","?",
+    "XhL0","?","?","?",
+
+    "XWA1","?","?","?",
+    "XBC1","?","?","?",
+    "XDE1","?","?","?",
+    "XhL1","?","?","?",
+
+    "XWA2","?","?","?",
+    "XBC2","?","?","?",
+    "XDE2","?","?","?",
+    "XhL2","?","?","?",
+
+    "XWA3","?","?","?",
+    "XBC3","?","?","?",
+    "XDE3","?","?","?",
+    "XhL3","?","?","?",
+
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+    "?","?","?","?", "?","?","?","?", "?","?","?","?", "?","?","?","?",
+
+    "XWA'","?","?","?",
+    "XBC'","?","?","?",
+    "XDE'","?","?","?",
+    "XhL'","?","?","?",
+
+    "XWA","?","?","?",
+    "XBC","?","?","?",
+    "XDE","?","?","?",
+    "XhL","?","?","?",
+
+    "XIX","?","?","?",
+    "XIY","?","?","?",
+    "XIZ","?","?","?",
+    "XSP","?","?","?",
 };
 
-char instr_tableB0_readbytes[256] =
-{
-    ONE_BYTE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
+unsigned char get8u( unsigned char *b ) { return *b; }
+unsigned short get16u( unsigned char *b ) { return ((b[1] << 8) | *b); }
+unsigned int get24u( unsigned char *b ) { return ((b[2] << 16) | (b[1] << 8) | *b); }
+unsigned int get32u( unsigned char *b ) { return ((b[3] << 24) | (b[2] << 16) | (b[1] << 8) | *b); }
+char get8( unsigned char *b ) { return *b; }
+short get16( unsigned char *b ) { return ((b[1] << 8) | *b); }
+int get32( unsigned char *b ) { return ((b[3] << 24) | (b[2] << 16) | (b[1] << 8) | *b); }
+int getR( unsigned char *m ) { return *m & 0x07; }
+int getr( unsigned char *m ) {
+  if ((*m & 0x0f) == 0x07) {
+		// opcode case xxxx0111 -> next byte tells the actual r
+    return -1;
+  } else {
+    return *m & 0x07;
+  }
+}
+int getzz( unsigned char *m ) { return (*m & 0x30) >> 4;}
+int getzzz( unsigned char *m ) { return (*m & 0x70) >> 4; }
+int getcc( unsigned char *m ) { return *m & 0x0f; }
+int getmem( unsigned char *m ) {
+	int mm = *m & 0x4f;
+	return ((mm & 0x40) >> 2) | (mm & 0x0f);
+}
+int getz1( unsigned char *m ) { return *m & 0x02; }
+int getz4( unsigned char *m ) {
+	int z4 = *m & 0x30;
+	return z4 >> 4;
+}
+int get3( unsigned char *m ) { return *m & 0x07; }
+int get4( unsigned char *m ) { return *m & 0x0f; }
 
-// DecodeB8 opcodes
-char *instr_tableB8[256] =
-{
-    "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-    "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-    "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-    "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-    "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-    "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-    "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-    "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-    "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-    "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-    //
-    "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-    "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-    "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-    "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-    "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-    "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
-};
+int retmem( unsigned char *b, char *s, int mem ) {
+  int i;
 
-char instr_tableB8_readbytes[256] =
-{
-    ONE_BYTE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
+  switch (mem) {
+  case ARI_XWA: case ARI_XBC: case ARI_XDE: case ARI_XHL:
+  case ARI_XIX: case ARI_XIY: case ARI_XIZ: case ARI_XSP:
+    strcpy(s,addr_names[mem]);
+    return 1;
+  case ARID_XWA: case ARID_XBC: case ARID_XDE: case ARID_XHL:
+  case ARID_XIX: case ARID_XIY: case ARID_XIZ: case ARID_XSP:
+    sprintf(s,"%s%04Xh)",addr_names[mem],get8(b+1) );
+    return 1+1;
+  case ABS_B:
+    sprintf(s,"(%02Xh)",b[1]);
+    return 1+1;
+  case ABS_W:
+    sprintf(s,"(%04Xh)",get16u(b+1));
+    return 1+2;
+  case ABS_L:
+    sprintf(s,"(%06Xh)",get24u(b+1));
+    return 1+3;
+	case ARI:
+    switch (b[1] & 0x03) {
+    case 0x00:  // (r32)
+      sprintf(s,"(%s)",r32_names[b[1] & 0xfc]);
+      return 1+1;
+    case 0x01:  // (r32 + d16)
+      sprintf(s,"(%s+%04Xh)",r32_names[b[1] & 0xfc ], get16(b+2) );
+      return 1+3;
+    case 0x03:
+      if (b[1] & 0x4) { // (r32+r16)
+        sprintf(s,"(%s+%s)",r32_names[b[2]],r16_names[b[3]]);
+      } else {          // (r32+r8)
+        sprintf(s,"(%s+%s)",r32_names[b[2]],r8_names[b[3]]);
+      }
+      return 1+3;
+    }
+  case ARI_PD:
+    //i = b[1] & 0x03;
+    //i = i ? i << 1 : 1;
+    //sprintf(s,"(-%s:%d)",r32_names[b[1] & 0xfc],i);
+    sprintf(s,"(-%s)",r32_names[b[1] & 0xfc]);
+    return 1+1;
+  case ARI_PI:
+    //i = b[1] & 0x03;
+    //i = i ? i << 1 : 1;
+    //sprintf(s,"(%s+:%d)",r32_names[b[1] & 0xfc],i);
+    sprintf(s,"(%s+)",r32_names[b[1] & 0xfc]);
+    return 1+1;
+  default:
+    strcpy(s,"(\?\?\?)");  // Invalid..
+    break;
+  }
+  return 0;
+}
 
-// DecodeC0 opcodes
-char *instr_tableC0[256] =
-{
-    "udef", "udef", "udef", "udef", "pushM00", "udef", "rld00", "rrd00",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "ld16M00", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00", "ldRM00",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00", "exMRB00",
-    "addMI00", "adcMI00", "subMI00", "sbcMI00", "andMI00", "xorMI00", "orMI00", "cpMI00",
-    //
-    "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00", "mulRMB00",
-    "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00", "mulsRMB00",
-    "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00", "divRMB00",
-    "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00", "divsRMB00",
-    "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00", "inc3M00",
-    "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00", "dec3M00",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "rlcM00", "rrcM00", "rlM00", "rrM00", "slaM00", "sraM00", "sllM00", "srlM00",
-    //
-    "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00", "addRMB00",
-    "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00", "addMRB00",
-    "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00", "adcRMB00",
-    "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00", "adcMRB00",
-    "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00", "subRMB00",
-    "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00", "subMRB00",
-    "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00", "sbcRMB00",
-    "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00", "sbcMRB00",
-    //
-    "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00", "andRMB00",
-    "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00", "andMRB00",
-    "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00", "xorRMB00",
-    "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00", "xorMRB00",
-    "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00", "orRMB00",
-    "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00", "orMRB00",
-    "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00", "cpRMB00",
-    "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00", "cpMRB00"
-};
-
-char instr_tableC0_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
-
-// DecodeC8 opcodes
-char *instr_tableC8[256] =
-{
-    "udef", "udef", "udef", "ldrIB", "pushrB", "poprB", "cplrB", "negrB",
-    "mulrIB", "mulsrIB", "divrIB", "divsrIB", "udef", "udef", "udef", "udef",
-    "daar", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "bios", "udef", "djnzB", "udef", "udef", "udef",
-    "andcf4rB", "orcf4rB", "xorcf4rB", "ldcf4rB", "stcf4rB", "udef", "udef", "udef",
-    "andcfArB", "orcfArB", "xorcfArB", "ldcfArB", "stcfArB", "udef", "ldccrB", "ldcrcB",
-    "res4rB", "set4rB", "chg4rB", "bit4rB", "tset4rB", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB", "mulRrB",
-    "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB", "mulsRrB",
-    "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB", "divRrB",
-    "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB", "divsRrB",
-    "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB", "inc3rB",
-    "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB", "dec3rB",
-    "sccB0", "sccB1", "sccB2", "sccB3", "sccB4", "sccB5", "sccB6", "sccB7",
-    "sccB8", "sccB9", "sccBA", "sccBB", "sccBC", "sccBD", "sccBE", "sccBF",
-    //
-    "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB", "addRrB",
-    "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB", "ldRrB",
-    "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB", "adcRrB",
-    "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB", "ldrRB",
-    "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB", "subRrB",
-    "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B", "ldr3B",
-    "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB", "sbcRrB",
-    "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB", "exRrB",
-    //
-    "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB", "andRrB",
-    "addrIB", "adcrIB", "subrIB", "sbcrIB", "andrIB", "xorrIB", "orrIB", "cprIB",
-    "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB", "xorRrB",
-    "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B", "cpr3B",
-    "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB", "orRrB",
-    "rlc4rB", "rrc4rB", "rl4rB", "rr4rB", "sla4rB", "sra4rB", "sll4rB", "srl4rB",
-    "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB", "cpRrB",
-    "rlcArB", "rrcArB", "rlArB", "rrArB", "slaArB", "sraArB", "sllArB", "srlArB"
-};
-
-char instr_tableC8_readbytes[256] =
-{
-    NONE, NONE, NONE, ONE_BYTE, NONE, NONE, NONE, NONE,
-    NONE, NONE, ONE_BYTE, ONE_BYTE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, ONE_BYTE, NONE, ONE_BYTE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, ONE_BYTE, ONE_BYTE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
-
-// DecodeD0 opcodes
-char *instr_tableD0[256] =
-{
-    "udef", "udef", "udef", "udef", "pushwM10", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "ldw16M10", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10", "ldRM10",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10", "exMRW10",
-    "addwMI10", "adcwMI10", "subwMI10", "sbcwMI10", "andwMI10", "xorwMI10", "orwMI10", "cpwMI10",
-    //
-    "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10", "mulRMW10",
-    "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10", "mulsRMW10",
-    "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10", "divRMW10",
-    "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10", "divsRMW10",
-    "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10", "incw3M10",
-    "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10", "decw3M10",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "rlcwM10", "rrcwM10", "rlwM10", "rrwM10", "slawM10", "srawM10", "sllwM10", "srlwM10",
-    //
-    "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10", "addRMW10",
-    "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10", "addMRW10",
-    "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10", "adcRMW10",
-    "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10", "adcMRW10",
-    "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10", "subRMW10",
-    "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10", "subMRW10",
-    "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10", "sbcRMW10",
-    "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10", "sbcMRW10",
-    //
-    "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10", "andRMW10",
-    "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10", "andMRW10",
-    "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10", "xorRMW10",
-    "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10", "xorMRW10",
-    "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10", "orRMW10",
-    "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10", "orMRW10",
-    "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10", "cpRMW10",
-    "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10", "cpMRW10"
-};
-
-char instr_tableD0_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
-
-// DecodeD8 opcodes
-char *instr_tableD8[256] =
-{
-    "udef", "udef", "udef", "ldrIW", "pushrW", "poprW", "cplrW", "negrW",
-    "mulrIW", "mulsrIW", "divrIW", "divsrIW", "udef", "udef", "bs1f", "bs1b",
-    "udef", "udef", "extzrW", "extsrW", "paarW", "udef", "mirrr", "udef",
-    "udef", "mular", "udef", "udef", "djnzW", "udef", "udef", "udef",
-    "andcf4rW", "orcf4rW", "xorcf4rW", "ldcf4rW", "stcf4rW", "udef", "udef", "udef",
-    "andcfArW", "orcfArW", "xorcfArW", "ldcfArW", "stcfArW", "udef", "ldccrW", "ldcrcW",
-    "res4rW", "set4rW", "chg4rW", "bit4rW", "tset4rW", "udef", "udef", "udef",
-    "minc1", "minc2", "minc4", "udef", "mdec1", "mdec2", "mdec4", "udef",
-    //
-    "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW", "mulRrW",
-    "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW", "mulsRrW",
-    "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW", "divRrW",
-    "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW", "divsRrW",
-    "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW", "inc3rW",
-    "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW", "dec3rW",
-    "sccW0", "sccW1", "sccW2", "sccW3", "sccW4", "sccW5", "sccW6", "sccW7",
-    "sccW8", "sccW9", "sccWA", "sccWB", "sccWC", "sccWD", "sccWE", "sccWF",
-    //
-    "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW", "addRrW",
-    "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW", "ldRrW",
-    "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW", "adcRrW",
-    "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW", "ldrRW",
-    "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW", "subRrW",
-    "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W", "ldr3W",
-    "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW", "sbcRrW",
-    "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW", "exRrW",
-    //
-    "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW", "andRrW",
-    "addrIW", "adcrIW", "subrIW", "sbcrIW", "andrIW", "xorrIW", "orrIW", "cprIW",
-    "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW", "xorRrW",
-    "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W", "cpr3W",
-    "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW", "orRrW",
-    "rlc4rW", "rrc4rW", "rl4rW", "rr4rW", "sla4rW", "sra4rW", "sll4rW", "srl4rW",
-    "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW", "cpRrW",
-    "rlcArW", "rrcArW", "rlArW", "rrArW", "slaArW", "sraArW", "sllArW", "srlArW"
-};
-
-char instr_tableD8_readbytes[256] =
-{
-    NONE, NONE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE,
-    NONE, NONE, TWO_BYTES, TWO_BYTES, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE, NONE, NONE,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, TWO_BYTES, TWO_BYTES,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES, TWO_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
-
-// DecodeE0 opcodes
-char *instr_tableE0[256] =
-{
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20", "ldRM20",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef ", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20", "addRML20",
-    "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20", "addMRL20",
-    "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20", "adcRML20",
-    "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20", "adcMRL20",
-    "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20", "subRML20",
-    "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20", "subMRL20",
-    "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20", "sbcRML20",
-    "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20", "sbcMRL20",
-    //
-    "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20", "andRML20",
-    "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20", "andMRL20",
-    "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20", "xorRML20",
-    "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20", "xorMRL20",
-    "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20", "orRML20",
-    "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20", "orMRL20",
-    "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20", "cpRML20",
-    "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20", "cpMRL20"
-};
-
-char instr_tableE0_readbytes[256] =
-{
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE, ONE_BYTE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
-
-// DecodeE8 opcodes
-char *instr_tableE8[256] =
-{
-    "udef", "udef", "udef", "ldrIL", "pushrL", "poprL", "udef", "udef",
-    "udef", "udef", "udef", "udef", "link", "unlk", "udef", "udef",
-    "udef", "udef", "extzrL", "extsrL", "paarL", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "ldccrL", "ldcrcL",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL", "inc3rL",
-    "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL", "dec3rL",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL", "addRrL",
-    "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL", "ldRrL",
-    "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL", "adcRrL",
-    "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL", "ldrRL",
-    "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL", "subRrL",
-    "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L", "ldr3L",
-    "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL", "sbcRrL",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL", "andRrL",
-    "addrIL", "adcrIL", "subrIL", "sbcrIL", "andrIL", "xorrIL", "orrIL", "cprIL",
-    "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL", "xorRrL",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL", "orRrL",
-    "rlc4rL", "rrc4rL", "rl4rL", "rr4rL", "sla4rL", "sra4rL", "sll4rL", "srl4rL",
-    "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL", "cpRrL",
-    "rlcArL", "rrcArL", "rlArL", "rrArL", "slaArL", "sraArL", "sllArL", "srlArL"
-};
-
-char instr_tableE8_readbytes[256] =
-{
-    NONE, NONE, NONE, FOUR_BYTES, NONE, NONE, NONE, NONE,
-    NONE, NONE, FOUR_BYTES, FOUR_BYTES, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, FOUR_BYTES, NONE, FOUR_BYTES, NONE, NONE, NONE,
-    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, FOUR_BYTES, FOUR_BYTES,
-    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES, FOUR_BYTES,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
-
-// DecodeF0 opcodes
-char *instr_tableF0[256] =
-{
-    "ldMI30", "udef", "ldwMI30", "udef", "popM30", "udef", "popwM30", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "ldM1630", "udef", "ldwM1630", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30", "ldaRMW30",
-    "andcfAM30", "orcfAM30", "xorcfAM30", "ldcfAM30", "stcfAM30", "udef", "udef", "udef",
-    "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30", "ldaRML30",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B", "ldMR30B",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W", "ldMR30W",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L", "ldMR30L",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    //
-    "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30", "andcf3M30",
-    "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30", "orcf3M30",
-    "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30", "xorcf3M30",
-    "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30", "ldcf3M30",
-    "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30", "stcf3M30",
-    "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30", "tset3M30",
-    "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30", "res3M30",
-    "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30", "set3M30",
-    //
-    "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30", "chg3M30",
-    "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30", "bit3M30",
-    "jpccM300", "jpccM301", "jpccM302", "jpccM303", "jpccM304", "jpccM305", "jpccM306", "jpccM307",
-    "jpccM308", "jpccM309", "jpccM30A", "jpccM30B", "jpccM30C", "jpccM30D", "jpccM30E", "jpccM30F",
-    "callccM300", "callccM301", "callccM302", "callccM303", "callccM304", "callccM305", "callccM306", "callccM307",
-    "callccM308", "callccM309", "callccM30A", "callccM30B", "callccM30C", "callccM30D", "callccM30E", "callccM30F",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef",
-    "udef", "udef", "udef", "udef", "udef", "udef", "udef", "udef"
-};
-
-char instr_tableF0_readbytes[256] =
-{
-    ONE_BYTE, NONE, TWO_BYTES, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, TWO_BYTES, NONE, TWO_BYTES, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    //
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE,
-    NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE
-};
+char **getregs( int r, int zz ) {
+  if (r < 0) {
+    switch (zz) {
+    case 0x00:
+      return r8_names;
+    case 0x01:
+      return r16_names;
+    case 0x02:
+      return r32_names;
+    default:
+      break;
+    }
+  } else {
+    switch (zz) {
+    case 0x00:
+      return R8_names;
+    case 0x01:
+      return R16_names;
+    case 0x02:
+      return R32_names;
+    default:
+      break;
+    }
+  }
+  return NULL;
+}
 
 // Constructor
 tlcs900hdebugger::tlcs900hdebugger(void)
@@ -1152,12 +384,6 @@ tlcs900hdebugger::tlcs900hdebugger(void)
 		m_breakpointList[i].buf[0] = 0;
 	}
 
-	for ( unsigned int i = 0; i < 0x200000; i++)
-	{
-		m_decodeList[i] = NULL;
-	}
-
-
 	// cr1eate a page of character memory (speed hack)
 	bufPage = new char[0x200000 * MAX_INSTR_LEN];
 }
@@ -1167,6 +393,17 @@ tlcs900hdebugger::~tlcs900hdebugger(void)
 {
 	// Delete our page
 	delete bufPage;
+}
+
+int tlcs900hdebugger::getInc(unsigned int addr)
+{
+	return bufInc[(addr-0x200000)];
+}
+
+// Get the string pointer for the specific address
+char * tlcs900hdebugger::getBufString(unsigned int addr)
+{
+	return &bufPage[(addr-0x200000)*MAX_INSTR_LEN];;
 }
 
 // Get the memory to the breakpoint list
@@ -1290,416 +527,1519 @@ unsigned char * tlcs900hdebugger::getCodePtr(unsigned long addr)
 	return 0;
 }
 
-// Decode the ROM at given address
-unsigned int tlcs900hdebugger::decodeTlcs900h(unsigned long addr)	// decode the current PC
-{	
-	// How many bytes did we eat?
-	int bytesRead = 0;
 
-	// Create our instruction
+// Decode the ROM at given address
+unsigned int tlcs900hdebugger::decodeTlcs900h(const unsigned int addr)	// decode the current PC
+{	
+	//unsigned char * b = dd->buffer + dd->pos;
+
+	// Get our instruction buffer
 	char * instrBuf = &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
 
-	unsigned char * readBuf = getCodePtr(addr);
-	unsigned char opcode = readBuf[0];
+	char empty[] = "            ";
+	unsigned char * b = getCodePtr(addr);
+	unsigned char mem;
+	unsigned char zz; // ??
+	int n;
+	int len, s, j;
+
+	struct tlcs900d * dd = &m_dd;
+	dd->addr = addr;
+		
+	len = decodeFixed(dd);
+	if ( len )
+		goto print_op;
 	
-	// Potential read bytes
-	unsigned char readByte[4];		// 8 bits [x4.. up to 32 bits]
+	mem = getmem(b);
+	zz = getzz(b);
 
-	unsigned int opcodeType = instr_names_readbytes[opcode];
-	
-	switch(opcodeType) {
-	case NONE:
-		sprintf(instrBuf, "0x%06x: %s", addr, instr_names[opcode]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 1;
-	break;
-	case ONE_BYTE:
-		readByte[0] = readBuf[1];	// read 1 byte
-		sprintf(instrBuf, "0x%06x: %s $%02x", addr, instr_names[opcode], readByte[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 2;
-	break;
-	case TWO_BYTES:
-		readByte[0] = readBuf[1];
-		readByte[1] = readBuf[2];
-		sprintf(instrBuf, "0x%06x: %s $%02x%02x", addr, instr_names[opcode], readByte[1], readByte[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 3;
-	break;
-	case THREE_BYTES:
-		readByte[0] = readBuf[1];
-		readByte[1] = readBuf[2];
-		readByte[2] = readBuf[3];
-		sprintf(instrBuf, "0x%06x: %s $%02x%02x%02x", addr, instr_names[opcode], readByte[2], readByte[1], readByte[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 4;
-	break;
-	case FOUR_BYTES:
-		readByte[0] = readBuf[1];
-		readByte[1] = readBuf[2];
-		readByte[2] = readBuf[3];
-		readByte[3] = readBuf[4];
-		sprintf(instrBuf, "0x%06x: %s $%02x%02x%02x%02x", addr, instr_names[opcode], readByte[3], readByte[2], readByte[1], readByte[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 5;
-	break;
-	case DECODE_INSTR:
-		bytesRead = decodeXX(addr, opcode);
-	break;
-	//case NONE_THREE_MEM,		// 10111mmm
-	//case NONE_THREE_REG,		// 10001rrr
-	case NONE_THREE_BITS:
-		readByte[0] = (opcode & 3); // 10001xxx
-		sprintf(instrBuf, "0x%06x: %s #$%02x", addr, instr_names[opcode], readByte[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 1;
-	break;
-	default:
-		sprintf(instrBuf, "0x%06x: UNKNOWN/INVALID", addr);
-		m_decodeList[addr-0x200000] = instrBuf;
-		bytesRead = 1; // default unknown to 1
-		break;
-	};
-
-	return bytesRead;
-}
-
-// DecodeXX can decode any number of possible opcodes
-int tlcs900hdebugger::decodeXX(unsigned long addr, unsigned char opcode)
-{
-	unsigned char * readBuf = getCodePtr(addr);
-	unsigned char reg = readBuf[1];
-
-	if ( opcode >= 0x80 && opcode < 0x88 )
+	if ( *b >= 0x80 )
 	{
-		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.B
-		return decodeBytes(addr, opcode, instr_table80, NONE);
-	}
-	else if ( opcode >= 0x88 && opcode < 0x90 )
-	{
-		// (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.B
-		return decodeBytes(addr, opcode, instr_table80, ONE_BYTE);
-	}
-	else if ( opcode >= 0x90 && opcode < 0x98 )
-	{
-		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.W
-		return decodeBytes(addr, opcode, instr_table90, NONE);
-	}
-	else if ( opcode >= 0x98 && opcode < 0xA0 )
-	{
-		// get one byte, then apply 98 (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.W
-		return decodeBytes(addr, opcode, instr_table90, ONE_BYTE);
-	}
-	else if ( opcode >= 0xA0 && opcode < 0xA8 )
-	{
-		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) scr.L
-		return decodeBytes(addr, opcode, instr_tableA0, NONE);
-	}
-	else if ( opcode >= 0xA8 && opcode < 0xB0 )
-	{
-		// get one byte, then apply A0
-		// (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) scr.L
-		return decodeBytes(addr, opcode, instr_tableA0, ONE_BYTE);
-	}
-	else if ( opcode >= 0xB0 && opcode < 0xB8 )
-	{
-		// (XWA) (XBC) (XDE) (XHL) (XIX) (XIY) (XIZ) (XSP) dst
-		return decodeBytes(addr, opcode, instr_tableB0, NONE);
-	}
-	else if ( opcode >= 0xB8 && opcode < 0xC0 )
-	{
-		// (XWA+d) (XBC+d) (XDE+d) (XHL+d) (XIX+d) (XIY+d) (XIZ+d) (XSP+d) dst
-		return decodeBytes(addr, opcode, instr_tableB0, ONE_BYTE);
-	}
-	else if ( opcode == 0xC0 )
-	{
-		// read one byte, then apply C0  (n)                scr.B
-		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
-	}
-	else if ( opcode == 0xC1 )
-	{
-		// read one word, then apply C0   (nn)             scr.B
-		return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
-	}
-	else if ( opcode == 0xC2 )
-	{
-		// read 3 bytes, then apply C0     (nnn)           scr.B
-		return decodeBytes(addr, opcode, instr_tableC0, THREE_BYTES);
-	}
-	else if ( opcode == 0xC3 )
-	{
-		// read byte       (mem)         scr.B
-		switch(reg&0x03)
+		// 0x03 is our specialty case
+		if ( zz == 0x03 )
 		{
-			case 0x00:
-				return decodeBytes(addr, opcode, instr_tableC0, NONE);
-			break;
-			case 0x01:
-				return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
-			break;
-			case 0x02:
-				return decodeBytes(addr, opcode, instr_tableC0, NONE);
-			break;
-			case 0x03:
-			switch (reg)
-			{
-				case 0x03:
-					return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
-				break;
-				case 0x07:
-					return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
-				break;
-				case 0x13:
-					return decodeBytes(addr, opcode, instr_tableC0, TWO_BYTES);
-				break;
-				default:
-					return decodeBytes(addr, opcode, instr_tableC0, NONE);
-				break;
-			}
+			len = decode_B0_mem(dd);
+		}
+		else
+		{
+			//
+            // These are opcodes like: 
+            //   E8+r
+            //   D8+r
+            //   C8+zz+r
+            //   85+zz
+            //   83+zz
+            //   80+zz+mem
+            //   80+zz+R
+            //
+
+            if (mem >= 0x17 && mem <= 0x1f) {
+                len = decode_zz_r(dd);
+            } else if (mem <= 0x07 && b[1] >= 0x10 && b[1] <= 0x17) {
+                len = decode_zz_R(dd);
+            } else if (mem <= 0x15) {
+                len = decode_zz_mem(dd);
+            }
 		}
 	}
-	else if ( opcode == 0xC4 )
-	{
-		// read 1 byte         (-xrr)       scr.B
-		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
-	}
-	else if ( opcode == 0xC5 )
-	{
-		// read 1 byte           (xrr+)     scr.B
-		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
-	}
-	else if ( opcode == 0xC7 )
-	{
-		// read 1 byte    r                reg.B
-		return decodeBytes(addr, opcode, instr_tableC0, ONE_BYTE);
-	}
-	else if ( opcode >= 0xC8 && opcode < 0xD0 )
-	{
-		// W  A  B  C  D  E  H  L  reg.B
-		return decodeBytes(addr, opcode, instr_tableC8, NONE);
-	}
-	else if ( opcode == 0xD0 )
-	{
-		// (n)                scr.W
-		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
-	}
-	else if ( opcode == 0xD1 )
-	{
-		//   (nn)             scr.W
-		return decodeBytes(addr, opcode, instr_tableD0, TWO_BYTES);
-	}
-	else if ( opcode == 0xD2 )
-	{
-		//     (nnn)           scr.W
-		return decodeBytes(addr, opcode, instr_tableD0, THREE_BYTES);
-	}
-	else if ( opcode == 0xD3 )
-	{ 
-		//       (mem)         scr.W
-		// read byte
-		// switch(byte)
-		//  0x0:
-		//    0 bytes
-		//  0x1:
-		//    2 bytes
-		//  0x2:
-		//    0 bytes (do nothing)
-		//  0x3:
-		//    2 bytes
-		//  0x7:
-		//    2 bytes
-		//  0x13:
-		//    2 bytes
-		return decodeBytes(addr, opcode, instr_tableD0, NONE); // FIX THIS
-	}
-	else if ( opcode == 0xD4 )
-	{
-		//         (-xrr)       scr.W
-		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
-	}
-	else if ( opcode == 0xD5 )
-	{
-		//           (xrr+)     scr.W
-		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
-	}
-	else if ( opcode == 0xD7 )
-	{
-		// r                reg.W
-		return decodeBytes(addr, opcode, instr_tableD0, ONE_BYTE);
-	}
-	else if ( opcode >= 0xD8 && opcode < 0xE0 )
-	{
-		// WA  BC  DE  HL  IX  IY  IZ  SP  reg.W
-		return decodeBytes(addr, opcode, instr_tableD8, NONE);
-	}
-	else if ( opcode == 0xE0 )
-	{
-		// (n)                scr.L
-		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
-	}
-	else if ( opcode == 0xE1 )
-	{
-		//   (nn)             scr.L
-		return decodeBytes(addr, opcode, instr_tableE0, TWO_BYTES);
-	}
-	else if ( opcode == 0xE2 )
-	{
-		//     (nnn)           scr.L
-		return decodeBytes(addr, opcode, instr_tableE0, THREE_BYTES);
-	}
-	else if ( opcode == 0xE3 )
-	{
-		//       (mem)         scr.L
-		// read byte
-		// switch(byte)
-		//  0x0:
-		//    0 bytes
-		//  0x1:
-		//    2 bytes
-		//  0x2:
-		//    0 bytes (do nothing)
-		//  0x3:
-		//    2 bytes
-		//  0x7:
-		//    2 bytes
-		//  0x13:
-		//    2 bytes
-		return decodeBytes(addr, opcode, instr_tableE0, NONE); // FIX THIS
-	}
-	else if ( opcode == 0xE4 )
-	{
-		//         (-xrr)       scr.L
-		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
-	}
-	else if ( opcode == 0xE5 )
-	{
-		//           (xrr+)     scr.L
-		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
-	}
-	else if ( opcode == 0xE7 )
-	{
-		// r                reg.L
-		return decodeBytes(addr, opcode, instr_tableE0, ONE_BYTE);
-	}
-	else if ( opcode >= 0xE8 && opcode < 0xF0 )
-	{
-		// XWA  XBC  XDE  XHL  XIX  XIY  XIZ  XSP  reg.L
-		return decodeBytes(addr, opcode, instr_tableE8, NONE);
-	}
-	else if ( opcode == 0xF0 )
-	{
-		// (n)                dst
-		return decodeBytes(addr, opcode, instr_tableF0, ONE_BYTE);
-	}
-	else if ( opcode == 0xF1 )
-	{
-		//   (nn)             dst
-		return decodeBytes(addr, opcode, instr_tableF0, TWO_BYTES);
-	}
-	else if ( opcode == 0xF2 )
-	{
-		//     (nnn)           dst
-		return decodeBytes(addr, opcode, instr_tableF0, THREE_BYTES);
-	}
-	else if ( opcode == 0xF3 )
-	{
-		//       (mem)         dst
-		// read byte
-		// switch(byte)
-		//  0x0:
-		//    0 bytes
-		//  0x1:
-		//    2 bytes
-		//  0x2:
-		//    0 bytes (do nothing)
-		//  0x3:
-		//    2 bytes
-		//  0x7:
-		//    2 bytes
-		//  0x13:
-		//    2 bytes
-		return decodeBytes(addr, opcode, instr_tableF0, NONE); // FIX THIS
-	}
-	else if ( opcode == 0xF4 )
-	{
-		//         (-xrr)       dst
-		return decodeBytes(addr, opcode, instr_tableF0, ONE_BYTE);
-	}
-	else if ( opcode == 0xF5 )
-	{
-		//           (xrr+)     dst
-		return decodeBytes(addr, opcode, instr_tableF0, ONE_BYTE);
-	}
 	else
 	{
-		char * instrBuf = &bufPage[(addr-0x200000) * MAX_INSTR_LEN];
-		sprintf(instrBuf, "0x%06x: UNKNOWN/INVALID", addr);
-		m_decodeList[addr-0x200000] = instrBuf;
+        len = decode_xx(dd);
+    }
+
+	print_op:
+
+	if (len == 0) {
+		sprintf(instrBuf,"%02X                ?????\n",*b);
 		return 1;
+	} else {
+		switch (dd->opt) {
+			case OPT_1_0_0:
+				sprintf(instrBuf,"%02X                ",*b);
+			break;
+			case OPT_1_1_0:
+				sprintf(instrBuf,"%02X %02X             ",*b, *(b+1));
+			break;
+			case OPT_1_1_1:
+				sprintf(instrBuf,"%02X %02X %02X          ",*b,*(b+1),*(b+2));
+			break;
+			case OPT_1_1_2:
+				sprintf(instrBuf,"%02X %02X %02X%02X        ",*b,*(b+1),*(b+2),*(b+3));
+			break;
+			case OPT_1_2_0:
+				sprintf(instrBuf,"%02X %02X%02X           ",*b,*(b+1),*(b+2));
+			break;
+			case OPT_1_3_0:
+				sprintf(instrBuf,"%02X %02X%02X%02X         ",*b,*(b+1),*(b+2),*(b+3));
+			break;
+			case OPT_2_1_2:
+				sprintf(instrBuf,"%02X%02X %02X %02X%02X      ",*b,*(b+1),*(b+2),*(b+3),*(b+4));
+			break;
+			case OPT_1_4_0:
+				sprintf(instrBuf,"%02X %02X%02X%02X%02X       ",*b,*(b+1),*(b+2),*(b+3),*(b+4));
+			break;
+			case OPT_1_1_1_1_1_1:
+				sprintf(instrBuf,"%02X %02X %02X %02X %02X %02X ",*b,*(b+1),*(b+2),
+					*(b+3),*(b+4),*(b+5));
+			break;
+			case OPT_1_n_1:
+				sprintf(instrBuf,"%02X ",*b++);
+				for (s = 0, j = 2; j < len; j++, s += 2) { sprintf(instrBuf,"%s%02X",instrBuf,*b++); }
+				if (s) { sprintf(instrBuf,"%s ",instrBuf); s++; }
+				s = 18 - 5 - s;
+				sprintf(instrBuf,"%s%02X%*.*s",instrBuf,*b++,s,s,empty);
+			break;
+			case OPT_1_n_1_1:
+				sprintf(instrBuf,"%02X ",*b++);
+				for (s = 0, j = 3; j < len; j++, s += 2) { sprintf(instrBuf,"%s%02X",instrBuf,*b++); }
+				if (s) { printf(" "); s++; }
+				s = 18 - 8 - s;
+				sprintf(instrBuf,"%s%02X %02X%*.*s",instrBuf,*(b),*(b+1),s,s,empty);
+			break;
+			case OPT_1_n_1_2:
+				sprintf(instrBuf,"%02X ",*b++);
+				for (s = 0, j = 4; j < len; j++, s += 2) { sprintf(instrBuf,"%s%02X",instrBuf,*b++); }
+				if (s) { sprintf(instrBuf,"%s ",instrBuf); s++; }
+				s = 18 - 10 - s;
+				sprintf(instrBuf,"%s%02X %02X%02X%*.*s",instrBuf,*(b),*(b+1),*(b+2),s,s,empty);
+			break;
+			case OPT_1_n_2:
+				sprintf(instrBuf,"%02X ",*b++);
+				for (s = 0, j = 3; j < len; j++, s += 2) { sprintf(instrBuf,"%s%02X",instrBuf,*b++); }
+				if (s) { sprintf(instrBuf,"%s ",instrBuf); s++; }
+				s = 18 - 7 - s;
+				sprintf(instrBuf,"%s%02X%02X%*.*s",instrBuf,*(b),*(b+1),s,s,empty);
+			break;
+			case OPT_1_n_1_4:
+				sprintf(instrBuf,"%02X ",*b++);
+				for (s = 0, j = 6; j < len; j++, s += 2) { sprintf(instrBuf,"%s%02X",instrBuf,*b++); }
+				if (s) { printf(" "); b++; }
+				s = 18 - 14 - s;
+				sprintf(instrBuf,"%s%02X %02X%02X%02X%02X%*.*s",
+					instrBuf,*(b),*(b+1),*(b+2),*(b+3),*(b+4),s,s,empty);
+			break;
+			default:
+				//assert(0);
+			break;
+		}
+
+		sprintf(instrBuf,"%s%-5s %s\n",instrBuf,dd->opf,dd->ops);
+		//dd->pos += len;
 	}
+
+	//return bytesRead;
+	bufInc[(addr-0x200000)] = len;
+
+	return len;
 }
 
-int tlcs900hdebugger::decodeBytes(unsigned long addr, unsigned char opcode, char ** instr_tableXX_readbytes, unsigned char setLastByteSize)
+// Decode any of the possible fixed opcodes
+int tlcs900hdebugger::decodeFixed(struct tlcs900d *dd)
 {
-	if ( addr & 0x1 ) // not word aligned
-	{
-		//mem = *(addr)
-		//lastbyte = *(addr+1)
-	}
-	else
-	{
-		//mem = *(addr)&0xFFFF
-		//lastbyte = mem>>8
+	unsigned char * b = getCodePtr(dd->addr);//dd->buffer + dd->pos;
+	int len = 1;
+	enum opcodes op;
+	int d;
+
+	*dd->ops = '\0';
+	dd->opt = OPT_1_0_0;
+	op = INVALID;
+
+	switch (*b) {
+		case 0x08: // LD (#8),#8
+			op = LD;
+			sprintf(dd->ops,"(%02Xh),%03Xh",get8u(b+1),get8u(b+2) );
+			len = 1+2;
+			dd->opt = OPT_1_1_1;
+		break;
+		case 0x0a: // LDW (#8),#16
+			op = LDW;
+			sprintf(dd->ops,"(%02Xh),%05Xh",get8u(b+1),get16u(b+2) );
+			len = 1+3;
+			dd->opt = OPT_1_1_2;
+		break;
+		case 0x09: // PUSH #8
+			op = PUSH;
+			sprintf(dd->ops,"%03Xh",get8u(b+1) );
+			len = 1+1;
+			dd->opt = OPT_1_1_0;
+		break;
+		case 0x0b: // PUSHW #16
+			op = PUSHW;
+			sprintf(dd->ops,"%05Xh",get16u(b+1) );
+			len = 1+2;
+			dd->opt = OPT_1_2_0;
+		break;
+		case 0x18: // PUSH F
+			op = PUSH;
+			sprintf(dd->ops,"F");
+		break;
+		case 0x14: // PUSH A
+			op = PUSH;
+			sprintf(dd->ops,"A");
+		break;
+		case 0x19: // POP F
+			op = POP;
+			sprintf(dd->ops,"F");
+		break;
+		case 0x15: // POP A
+			op = POP;
+			sprintf(dd->ops,"A");
+		break;
+		case 0x16: // EX F,F'
+			op = EX;
+			sprintf(dd->ops,"F,F'");
+		break;
+		case 0x10: // RCF
+			op = RCF;
+		break;
+		case 0x11: // SCF
+			op = SCF;
+		break;
+		case 0x12: // CCF
+			op = CCF;
+		break;
+		case 0x13: // ZCF
+			op = ZCF;
+		break;
+		case 0x00: // NOP
+			op = NOP;
+		break;
+		case 0x06: // EI [#3] / DI
+			if (b[1] == 0x07) {
+				op = DI;
+			} else {
+				op = EI;
+				sprintf(dd->ops,"%d",b[1] & 0x07);
+			}
+			len = 1+1;
+			dd->opt = OPT_1_1_0;
+		break;
+		case 0x02: // PUSH SR
+			op = PUSH;
+			sprintf(dd->ops,"SR");
+		break;
+		case 0x03: // POP SR
+			op = POP;
+			sprintf(dd->ops,"SR");
+		break;
+		case 0x05: // HALT
+			op = HALT;
+		break;
+		case 0x0c: // INCF
+			op = INCF;
+		break;
+		case 0x0d: // DECF
+			op = DECF;
+		break;
+		case 0x1a: // JP #16
+			op = JP;
+			sprintf(dd->ops,"%05Xh",get16u(b+1));
+			len = 1+2;
+			dd->opt = OPT_1_2_0;
+		break;
+		case 0x1b: // JP #24
+			op = JP;
+			sprintf(dd->ops,"%07Xh",get24u(b+1));
+			len = 1+3;
+			dd->opt = OPT_1_3_0;
+		break;
+		case 0x1c: // CALL #16
+			op = CALL;
+			sprintf(dd->ops,"%05Xh",get16u(b+1));
+			len = 1+2;
+			dd->opt = OPT_1_2_0;
+		break;
+		case 0x1d: // CALL #24
+			op = CALL;
+			sprintf(dd->ops,"%07Xh",get24u(b+1));
+			len = 1+3;
+			dd->opt = OPT_1_3_0;
+		break;
+		case 0x1e: // CALR d16 !!!!
+			op = CALR;
+			d = dd->addr + 3 + get16(b+1); //dd->base + dd->pos + 3 + get16(b+1);
+			sprintf(dd->ops,"%07Xh",d);   // relative to the address..
+			len = 1+2;
+			dd->opt = OPT_1_2_0;
+		break;
+		case 0x0e: // RET
+			op = RET;
+		break;
+		case 0x0f: // RETD d16
+			op = RETD;
+			sprintf(dd->ops,"%05Xh",get16(b+1));
+			len = 1+2;
+			dd->opt = OPT_1_2_0;
+		break;
+		case 0x07: // RETI
+			op = RETI;
+		break;
+		case 0xf7: // LDX (#8),#8
+			op = LDX;
+			sprintf(dd->ops,"(%02Xh),%03Xh",get8u(b+2),get8u(b+4));
+			len = 1+5;
+			dd->opt = OPT_1_1_1_1_1_1;
+		break;
+		case 0xf8: // SWI [#3];
+		case 0xf9: case 0xfa: case 0xfb:
+		case 0xfc: case 0xfd: case 0xfe: case 0xff:
+			op = SWI;
+			sprintf(dd->ops,"%d",*b & 0x07);
+		break;
+		case 0x17: // LDF #3
+			op = LDF;
+			sprintf(dd->ops,"%d",get8u(b+1) & 0x07);
+			len = 1+1;
+			dd->opt = OPT_1_1_0;
+		break;
+		default:
+			len = 0;
+		break;
 	}
 
-	// 0 - XWA, 1 - XBC, 2 - XDE, 3 - XHL, 4 - XIX, 5 - XIY, 6 - XIZ, 7 - XSP
-	int readLen = 2; // 2 so far
-	
-	unsigned char * readBuf = getCodePtr(addr);
-	unsigned char dcode = readBuf[setLastByteSize+1];
-	char * xreg = xreg_names[dcode & 0x7];
-	unsigned char byteBuf[4];
-	//int decType = instr_tableXX_readbytes[dcode];
-	char * instrBuf = &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
-	switch(setLastByteSize)
-	{
-	case NONE:
-		sprintf(instrBuf, "0x%06x: %s (%s)", addr, instr_tableXX_readbytes[dcode], xreg);
-		m_decodeList[addr-0x200000] = instrBuf;
-	break;
-	case ONE_BYTE:
-		byteBuf[0] = readBuf[1];
-		sprintf(instrBuf, "0x%06x: %s (%s) $%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		readLen += 1;
-	break;
-	case TWO_BYTES:
-		byteBuf[0] = readBuf[1];
-		byteBuf[1] = readBuf[2];
-		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[1], byteBuf[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		readLen += 2;
-	break;
-	case THREE_BYTES:
-		byteBuf[0] = readBuf[1];
-		byteBuf[1] = readBuf[2];
-		byteBuf[2] = readBuf[3];
-		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[2], byteBuf[1], byteBuf[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		readLen += 3;
-	break;
-	case FOUR_BYTES:
-		byteBuf[0] = readBuf[1];
-		byteBuf[1] = readBuf[2];
-		byteBuf[2] = readBuf[3];
-		byteBuf[3] = readBuf[4];
-		sprintf(instrBuf, "0x%06x: %s (%s) $%02x%02x%02x%02x", addr, instr_tableXX_readbytes[dcode], xreg, byteBuf[3], byteBuf[2], byteBuf[1], byteBuf[0]);
-		m_decodeList[addr-0x200000] = instrBuf;
-		readLen += 4;
-	break;
-	};
+	dd->opf = opcode_names[op];
 
-	return readLen; // total bytes we pulled
+	return len;
+}
+
+// Decode with the B0 mem
+int tlcs900hdebugger::decode_B0_mem( struct tlcs900d * dd ) {
+	char m[OPS_LEN];
+	enum opcodes op = INVALID;
+	unsigned char *b = getCodePtr(dd->addr);//dd->buffer + dd->pos;
+	int len = 1;
+	int n;
+	int zz;
+	int R;
+
+	*dd->ops = '\0';
+	dd->opt = OPT_1_n_1;
+
+	//
+	// Following opcodes:
+	//   LD (mem),R         B0+mem:40+zz+R  +
+	//   LD<W> (mem),#      B0+mem:00+z:#   +
+	//   LD<W> (mem),(#16)  B0+mem:14+z:#16 +
+	//   POP<W> (mem)       B0+mem:04+z     +
+	//   LDA R,mem          B0+mem:20+s+R   +
+	//   LDAR R,$+4+d16     F3:13:d16:20+s+R    +
+	//   LDCF #3,(mem)      B0+mem:98+#3    +
+	//   LDCF A,(mem)       B0+mem:2B       +
+	//   STCF #3,(mem)      B0+mem:A0+#3    +
+	//   STCF A,(mem)       B0+mem:2C       +
+	//   ANDCF #3,(mem)     B0+mem:80+#3    +
+	//   ANDCF A,(mem)      B0+mem:28       +
+	//   ORCF #3,(mem)      B0+mem:88+#3    +
+	//   ORCF A,(mem)       B0+mem:29       +
+	//   XORCF #3,(mem)     B0+mem:90+#3    +
+	//   XORCF A,(mem)      B0+mem:2A       +
+	//   BIT #3,(mem)       B0+mem:C8+#3    +
+	//   RES #3,(mem)       B0+mem:B0+#3    +
+	//   SET #3,(mem)       B0+mem:B8+#3    +
+	//   CHG #3,(mem)       B0+mem:C0+#3    +
+	//   TSET #3,(mem)      B0+mem:A8+#3    +
+	//   JP [cc,]mem        B0+mem:D0+cc    +
+	//   CALL [cc,]mem      B0+mem:E0+cc    +
+	//   RET cc             B0:F0+cc        +
+	//
+
+	if (*b == 0xf3 && b[1] == 0x13) {  // LDAR..
+		int d16 = get16(b+2) + 4 + dd->addr; //dd->base + dd->pos;
+
+		dd->opf = opcode_names[LDAR];
+
+		if (b[4] & 0x20) {
+			sprintf(dd->ops,"%s,%09Xh",R32_names[ getR(b+4) ],d16);
+		} else {
+			sprintf(dd->ops,"%s,%09Xh",R16_names[ getR(b+4) ],d16);
+		}
+		dd->opt = OPT_2_1_2;
+		return 5;
+	}
+	if (*b == 0xb0 && b[1] >= 0xf0) {  // RET cc..
+		dd->opf = opcode_names[RET];
+		strcpy(dd->ops,cc_names[getcc(b+1)]);
+		dd->opt = OPT_1_1_0;
+		return 2;
+	}
+
+	// Another huge switch based on the nth byte..
+
+	n = retmem(b,m,getmem(b));
+	if (n == 0) { return 0; }
+
+	switch (b[n]) {
+		case 0xe0: case 0xe1: case 0xe2: case 0xe3:
+		case 0xe4: case 0xe5: case 0xe6: case 0xe7:
+		case 0xe8: case 0xe9: case 0xea: case 0xeb:
+		case 0xec: case 0xed: case 0xee: case 0xef:
+			dd->opf = opcode_names[CALL];
+			if (getcc(b+n) != 8) {
+				sprintf(dd->ops,"%s,%s",cc_names[getcc(b+n)],m);
+			} else {
+				strcpy(dd->ops,m);
+			}
+			dd->opt = OPT_1_n_1;
+			return n+1;
+		case 0xd0: case 0xd1: case 0xd2: case 0xd3:
+		case 0xd4: case 0xd5: case 0xd6: case 0xd7:
+		case 0xd8: case 0xd9: case 0xda: case 0xdb:
+		case 0xdc: case 0xdd: case 0xde: case 0xdf:
+			dd->opf = opcode_names[JP];
+			if (getcc(b+n) != 8) {
+				sprintf(dd->ops,"%s,%s",cc_names[getcc(b+n)],m);
+			} else {
+				strcpy(dd->ops,m);
+			}
+			dd->opt = OPT_1_n_1;
+			return n+1;
+		case 0x28:  // ANDCF A,(mem)
+			dd->opf = opcode_names[ANDCF];
+			sprintf(dd->ops,"A,%s",m);      
+			return n+1;
+		case 0x29:  // ORCF A,(mem)
+			dd->opf = opcode_names[ORCF];
+			sprintf(dd->ops,"A,%s",m);      
+			return n+1;
+		case 0x2a:  // XORCF A,(mem)
+			dd->opf = opcode_names[XORCF];
+			sprintf(dd->ops,"A,%s",m);      
+			return n+1;
+		case 0x2b:  // LDCF A,(mem)
+			dd->opf = opcode_names[LDCF];
+			sprintf(dd->ops,"A,%s",m);      
+			return n+1;
+		case 0x2c:  // STCF A,(mem)
+			dd->opf = opcode_names[STCF];
+			sprintf(dd->ops,"A,%s",m);      
+			return n+1;
+		case 0x00:  // LD (mem),#8
+			dd->opf = opcode_names[LD];
+			sprintf(dd->ops,"%s,%03Xh",m,get8u(b+n+1));      
+			dd->opt = OPT_1_n_1_1;
+			return n+2;
+		case 0x02:  // LDW (mem),#16
+			dd->opf = opcode_names[LDW];
+			sprintf(dd->ops,"%s,%05Xh",m,get16u(b+n+1));      
+			dd->opt = OPT_1_n_1_2;
+			return n+3;
+		case 0x04:  // POP (mem)
+			dd->opf = opcode_names[POP];
+			strcpy(dd->ops,m);
+			return n+1;
+		case 0x06:  // POPW (mem)
+			dd->opf = opcode_names[POPW];
+			strcpy(dd->ops,m);
+			return n+1;
+		case 0x14:  // LD (mem),(#16)
+			dd->opf = opcode_names[LD];
+			sprintf(dd->ops,"%s,(%04Xh)",m,get16u(b+n+1) );      
+			return n+3;
+		case 0x16:  // LDW (mem),(#16)
+			dd->opf = opcode_names[LDW];
+			sprintf(dd->ops,"%s,(%04Xh)",m,get16u(b+n+1) );      
+			dd->opt = OPT_1_n_2;
+			return n+3;
+		default:
+		break;
+	}
+
+	zz = getzz(b+n);
+	R = getR(b+n);
+
+	switch (b[n] & 0xf8) {
+		case 0x40:  // LD (mem),R
+			op = LD;
+			sprintf(dd->ops,"%s,%s",m,R8_names[R]);
+			len = n+1;
+		break;
+		case 0x50:  // LD (mem),R
+			op = LD;
+			sprintf(dd->ops,"%s,%s",m,R16_names[R]);
+			len = n+1;
+		break;
+			case 0x60:  // LD (mem),R
+			op = LD;
+			sprintf(dd->ops,"%s,%s",m,R32_names[R]);
+			len = n+1;
+		break;
+		case 0x20:
+			op = LDA; // LDA R,(mem)
+			sprintf(dd->ops,"%s,%s",R16_names[R],m);
+			len = n+1;
+		break;
+		case 0x30:
+			op = LDA; // LDA R,(mem)
+			sprintf(dd->ops,"%s,%s",R32_names[R],m);
+			len = n+1;
+		break;
+		case 0x98:  // LDCF #3,(mem)
+			op = LDCF;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0xa0:  // STCF #3,(mem)
+			op = STCF;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0x80:  // ANDCF #3,(mem)
+			op = ANDCF;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0x88:
+			op = ORCF;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0x90:
+			op = XORCF;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0xc8:
+			op = BIT;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0xb0:
+			op = RES;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0xb8:
+			op = SET;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0xc0:
+			op = CHG;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		case 0xa8:
+			op = TSET;
+			sprintf(dd->ops,"%d,%s",R,m);  // R is now #3
+			len = n+1;
+		break;
+		default:  // INVALID
+			len = 0;
+			op = INVALID;
+		break;
+	}
+
+	//
+	dd->opf = opcode_names[op];
+	return len;
+}
+
+
+int tlcs900hdebugger::decode_xx( struct tlcs900d *dd ) {
+	unsigned char *b = getCodePtr(dd->addr);//dd->buffer + dd->pos;
+	int len = 0;
+	int cc = getcc(b);
+	int R = getR(b);
+	enum opcodes op = INVALID;
+	int d = dd->addr; //dd->base + dd->pos;
+
+	*dd->ops = '\0';
+	dd->opt = OPT_1_0_0;
+
+	//
+	// Only few opcodes left..
+	//   LD R,#             0+zzz+R:#   %0zzz0RRR:#
+	//                                  %00100RRR
+	//                                  %00110RRR
+	//                                  %01000RRR
+	//   PUSH R             28+s+R      %001s1RRR
+	//   POP R              48+s+R      %010s1RRR
+	//   JR [cc,]$+2+d8     60+cc:d8    %0110cccc:d8
+	//   JRL [cc,]$+3+d16   70+cc:d16   %0111cccc:d16
+	//
+
+	switch (*b & 0xf8) {
+		case 0x20:  // LD R,#8
+			op = LD;
+			dd->opt = OPT_1_1_0;
+			sprintf(dd->ops,"%s,%03Xh",R8_names[R],get8u(b+1) );
+			len = 1+1;
+		break;
+		case 0x30:  // LD R,#16
+			op = LD;
+			dd->opt = OPT_1_2_0;
+			sprintf(dd->ops,"%s,%05Xh",R16_names[R],get16u(b+1) );
+			len = 1+2;
+		break;
+		case 0x40:  // LD R,#32
+			op = LD;
+			dd->opt = OPT_1_4_0;
+			sprintf(dd->ops,"%s,%09Xh",R32_names[R],get32u(b+1) );
+			len = 1+4;
+		break;
+		case 0x28:  // PUSH R (word)
+			op = PUSH;
+			sprintf(dd->ops,"%s",R16_names[R] );
+			len = 1;
+		break;
+		case 0x38:  // PUSH R (long)
+			op = PUSH;
+			sprintf(dd->ops,"%s",R32_names[R] );
+			len = 1;
+		break;
+		case 0x48:  // POP R (word)
+			op = POP;
+			sprintf(dd->ops,"%s",R16_names[R] );
+			len = 1;
+		break;
+		case 0x58:  // POP R (long)
+			op = POP;
+			sprintf(dd->ops,"%s",R32_names[R] );
+			len = 1;
+		break;
+		default:
+			if ((*b & 0x70) == 0x70) {
+				//   JRL [cc,]$+3+d16   70+cc:d16   %0111cccc:d16
+				d = d + get16(b+1) + 3;
+				op = JRL; 
+				len = 1+2;
+				dd->opt = OPT_1_2_0;
+			} else if ((*b & 0x60) == 0x60) {
+				//   JR [cc,]$+2+d8     60+cc:d8    %0110cccc:d8
+				d = d + get8(b+1) + 2;
+				op = JR;
+				len = 1+1;
+				dd->opt = OPT_1_1_0;
+			} else {
+				// unknown instruction..
+				op = INVALID;
+				break;
+			}
+
+			// do JR or JRL..
+			if (cc != 0x08) {
+				sprintf(dd->ops,"%s,%07Xh",cc_names[cc],d);
+			} else {
+				sprintf(dd->ops,"%07Xh",d);
+			}
+		break;
+	}
+
+	dd->opf = opcode_names[op];
+	return len;
+}
+
+int tlcs900hdebugger::decode_zz_r( struct tlcs900d *dd ) {
+	unsigned char *b = getCodePtr(dd->addr); //dd->buffer + dd->pos;
+	unsigned char c;
+	char **regs;
+	char **Regs;
+	int zz = getzz(b);
+	int r = getr(b);
+	int len = 1;
+	enum opcodes op = INVALID;
+	int base;
+
+	switch (zz) {
+		case 0x00:
+			Regs = R8_names;
+		break;
+		case 0x01:
+			Regs = R16_names;
+		break;
+		case 0x02:
+			Regs = R32_names;
+		break;
+		case 0x03:
+		default:
+		return 0;
+	}
+
+	//
+	regs = getregs( r, zz );
+
+	if (r < 0) {
+		r = b[len++];
+		dd->opt = OPT_1_1_1;
+	}
+
+	//
+	// Following many opcodes:
+	//   LD r,#     C8+zz+r:03:#    * 0x03-0x10
+	//   PUSH r     C8+zz+r:04      *
+	//   POP r      C8+zz+r:05      *
+	//   CPL r      C8+zz+r:06      *
+	//   NEG r      C8+0z+r:07      *
+	//   MUL rr,#   C8+zz+r:08:#    *
+	//   MULS rr,#  C8+zz+r:09:#    *
+	//   DIV rr,#   C8+zz+r:0A:#    *
+	//   DIVS rr,#  C8+zz+r:0B:#    *
+	//   LINK r,d16 C8+10+r:0C:d16  *
+	//   UNLK r     C8+10+r:0D      *
+	//   BS1F A,r   C8+01+r:0E      *
+	//   BS1B A,r   C8+01+r:0F      *
+	//   DAA r      C8+00+r:10      *
+	//   EXTZ r     C8+zz+r:12      * 0x12-0x14
+	//   EXTS r     C8+zz+r:13      *
+	//   PAA r      C8+zz+r:14      *
+	//   MIRR r     C8+01+r:16      * 0x16
+	//   MULA rr    C8+01+r:19      * 0x19
+	//   DJNZ [r,]$+3/4+d8  C8+zz+r:1C:d8 * 0x1c
+	//   ANDCF #4,r C8+zz+r:20:#4   * 0x20-0x24
+	//   ORCF #4,r  C8+zz+r:21:#4   *
+	//   XORCF #4,r C8+zz+r:22:#4   *
+	//   LDCF #4,r  C8+zz+r:23:#4   *
+	//   STCF #4,r  C8+zz+r:24:#4   *
+	//   ANDCF A,r  C8+zz+r:28      * 0x28-0x2c
+	//   ORCF A,r   C8+zz+r:29      *
+	//   XORCF A,r  C8+zz+r:2A      *
+	//   LDCF A,r   C8+zz+r:2B      *
+	//   STCF A,r   C8+zz+r:2C      *
+	//   LDC cr,r   C8+zz+r:2E      *
+	//   LDC r,cr   C8+zz+r:2F      *
+	//   RES #4,r   C8+zz+r:30:#4   * 0x30-0x34
+	//   SET #4,r   C8+zz+r:31:#4   *
+	//   CHG #4,r   C8+zz+r:32:#4   *
+	//   BIT #4,r   C8+zz+r:33:#4   *
+	//   TSET #4,r  C8+zz+r:34:#4   *
+	//   MINC1 #,r  C8+01+r:38:#-1  * 0x38-0x3a
+	//   MINC2 #,r  C8+01+r:39:#-2  *
+	//   MINC4 #,r  C8+01+r:3A:#-4  *
+	//   MDEC1 #,r  C8+01+r:3C:#-1  * 0x3c-0x3e
+	//   MDEC2 #,r  C8+01+r:3D:#-2  *
+	//   MDEC4 #,r  C8+01+r:3E:#-4  *
+	//   ADD r,#    C8+zz+r:C8:#    * 0xc8-0xcf
+	//   ADC r,#    C8+zz+r:C9:#    *
+	//   SUB r,#    C8+zz+r:CA:#    *
+	//   SBC r,#    C8+zz+r:CB:#    *
+	//   AND r,#    C8+zz+r:CC:#    *
+	//   XOR r,#    C8+zz+r:CD:#    *
+	//   OR r,#     C8+zz+r:CE:#    *
+	//   CP r,#     C8+zz+r:CF:#    *
+	//   RLC #4,r   C8+zz+r:E8:#4   * 0xe8-0xef
+	//   RRC #4,r   C8+zz+r:E9:#4   *
+	//   RL #4,r    C8+zz+r:EA:#4   *
+	//   RR #4,r    C8+zz+r:EB:#4   *
+	//   SLA #4,r   C8+zz+r:EC:#4   *
+	//   SRA #4,r   C8+zz+r:ED:#4   *
+	//   SLL #4,r   C8+zz+r:EE:#4   *
+	//   SRL #4,r   C8+zz+r:EF:#4   *
+	//   RLC A,r    C8+zz+r:F8      * 0xf8-0xff
+	//   RRC A,r    C8+zz+r:F9      *
+	//   RL A,r     C8+zz+r:FA      *
+	//   RR A,r     C8+zz+r:FB      *
+	//   SLA A,r    C8+zz+r:FC      *
+	//   SRA A,r    C8+zz+r:FD      *
+	//   SLL A,r    C8+zz+r:FE      *
+	//   SRL A,r    C8+zz+r:FF      *
+	// groups or 8s or 16s
+	//   MUL RR,r   C8+zz+r:40+R    * 0x40-0xc7
+	//   MULS RR,r  C8+zz+r:48+R    *
+	//   DIV RR,r   C8+zz+r:50+R    *
+	//   DIVS RR,r  C8+zz+r:58+R    *
+	//   INC #3,r   C8+zz+r:60+#3   *
+	//   DEC #3,r   C8+zz+r:68+#3   *
+	//   SCC cc,r   C8+zz+r:70+cc   *
+	//   ADD R,r    C8+zz+r:80+R    *
+	//   LD R,r     C8+zz+r:88+R    *
+	//   ADC R,r    C8+zz+r:90+R    *
+	//   LD r,R     C8+zz+r:98+R    *
+	//   SUB R,r    C8+zz+r:A0+R    *
+	//   LD r,#3    C8+zz+r:A8+#3   *
+	//   SBC R,r    C8+zz+r:B0+R    *
+	//   EX R,r     C8+zz+r:B8+R    *
+	//   AND R,r    C8+zz+r:C0+R    *
+	//   XOR R,r    C8+zz+r:D0+R    * 0xd0-0xe7
+	//   CP r,#3    C8+zz+r:D8+#3   *
+	//   OR R,r     C8+zz+r:E0+R    *
+	//   CP R,r     C8+zz+r:F0+R    * 0xf0-0xf7
+	//   
+
+	c = b[len++];
+
+	if (c >= 0x40 && c < 0xc8 || c >= 0xd0 && c < 0xe8 || c >= 0xf0 && c < 0xf8) {
+		// xx+R , xx+#3 , 70+cc 
+		switch (c & 0xf8) {
+			case 0x40:  // MUL RR,r
+				op = MUL;
+				goto zz_R;
+			case 0x48:  // MULS RR,r
+				op = MULS;
+				goto zz_R;
+			case 0x50:  // DIV RR,r
+				op = DIV;
+				goto zz_R;
+			case 0x58:  // DIVS RR,r
+				op = DIVS;
+				goto zz_R;
+			case 0x80:  // ADD R,r
+				op = ADD;
+				goto zz_R;
+			case 0x88:  // LD R,r
+				op = LD;
+				goto zz_R;
+			case 0x90:  // ADC R,r
+				op = ADC;
+				goto zz_R;
+			case 0xa0:  // SUB R,r
+				op = SUB;
+				goto zz_R;
+			case 0xb0:  // SBC R,r
+				op = SBC;
+				goto zz_R;
+			case 0xb8:  // EX R,r
+				op = EX;
+				goto zz_R;
+			case 0xc0:  // AND R,r
+				op = AND;
+				goto zz_R;
+			case 0xd0:  // XOR R,r
+				op = XOR;
+				goto zz_R;
+			case 0xe0:  // OR R,r
+				op = OR;
+				goto zz_R;
+			case 0xf0:  // CP R,r
+				op = CP;
+			zz_R:
+				sprintf(dd->ops,"%s,%s",Regs[c & 0x07],regs[r]);
+				dd->opt = OPT_1_n_1;
+			break;
+			case 0x98:  // LD r,R
+				op = LD;
+				sprintf(dd->ops,"%s,%s",regs[r],Regs[c & 0x07]);
+				dd->opt = OPT_1_n_1;
+			break;
+			case 0x60:  // INC #3,r
+				op = INC;
+			case 0x68:  // DEC #3,r
+				if (op == INVALID) { op = DEC; }
+				if ((c &= 0x07) == 0) { c = 8; }
+				sprintf(dd->ops,"%d,%s",c,regs[r]);
+				dd->opt = OPT_1_1_0;
+			break;
+			case 0xa8:  // LD r,#3
+				op = LD;
+			case 0xd8:  // CP r,#3
+				if (op == INVALID) { op = CP; }
+				sprintf(dd->ops,"%s,%03Xh",regs[r],c & 0x07);
+				dd->opt = OPT_1_1_0;
+			break;
+			case 0x70:  // SCC cc,r
+			case 0x78: 
+				op = SCC;
+				sprintf(dd->ops,"%s,%s",cc_names[c & 0x0f],regs[r]);
+				dd->opt = OPT_1_n_1;
+			break;
+			default:
+				// unknown opcode..
+				return 0;
+		}
+	} else {
+		switch (c) {
+			case 0x03:  // LD r,#
+				op = LD;
+				goto r_num;
+			case 0x08:  // MUL rr,#
+				op = MUL;
+				goto r_num;
+			case 0x09:  // MULS rr,#
+				op = MULS;
+				goto r_num;
+			case 0x0a:  // DIV rr,#
+				op = DIV;
+				goto r_num;
+			case 0x0b:  // DIVS rr,#
+				op = DIVS;
+				goto r_num;
+			case 0xc8:  // ADD r,#
+				op = ADD;
+				goto r_num;
+			case 0xc9:  // ADC r,#
+				op = ADC;
+				goto r_num;
+			case 0xca:  // SUB r,#
+				op = SUB;
+				goto r_num;
+			case 0xcb:  // SBC r,#
+				op = SBC;
+				goto r_num;
+			case 0xcc:  // AND r,#
+				op = AND;
+				goto r_num;
+			case 0xcd:  // XOR r,#
+				op = XOR;
+				goto r_num;
+			case 0xce:  // OR r,#
+				op = OR;
+				goto r_num;
+			case 0xcf:  // CP r,#
+				op = CP;
+			r_num:
+				if (zz == 0) {
+					sprintf(dd->ops,"%s,%03Xh",regs[r],get8u(b+len));
+					len++;
+					dd->opt = OPT_1_n_1_1;
+				} else if (zz == 1) {
+					sprintf(dd->ops,"%s,%05Xh",regs[r],get16u(b+len));
+					len += 2;
+					dd->opt = OPT_1_n_1_2;
+				} else if (zz == 2) {
+					sprintf(dd->ops,"%s,%09Xh",regs[r],get32u(b+len));
+					len += 4;
+					dd->opt = OPT_1_n_1_4;
+				} else {
+					// Hmmm not a valid instruction..
+					return 0;
+					//assert(zz < 3);
+				}
+			break;
+
+			case 0x20:  // ANDCF #4,r
+				op = ANDCF;
+				goto num_r;
+			case 0x21:  // ORCF #4,r
+				op = ORCF;
+				goto num_r;
+			case 0x22:  // XORCF #4,r
+				op = XORCF;
+				goto num_r;
+			case 0x23:  // LDCF #4,r
+				op = LDCF;
+				goto num_r;
+			case 0x24:  // STCF #4,r
+				op = STCF;
+				goto num_r;
+			case 0x30:  // RES #4,r
+				op = RES;
+				goto num_r;
+			case 0x31:  // SET #4,r
+				op = SET;
+				goto num_r;
+			case 0x32:  // CHG #4,r
+				op = CHG;
+				goto num_r;
+			case 0x33:  // BIT #4,r
+				op = BIT;
+				goto num_r;
+			case 0x34:  // TSET #4,r
+				op = TSET;
+				goto num_r;
+			case 0xe8:  // RLC #4,r
+				op = RLC;
+				goto num_r;
+			case 0xe9:  // RRC #4,r
+				op = RRC;
+				goto num_r;
+			case 0xea:  // RL #4,r
+				op = RL;
+				goto num_r;
+			case 0xeb:  // RR #4,r
+				op = RR;
+				goto num_r;
+			case 0xec:  // SLA #4,r
+				op = SLA;
+				goto num_r;
+			case 0xed:  // SRA #4,r
+				op = SRA;
+				goto num_r;
+			case 0xee:  // SLL #4,r
+				op = SLL;
+				goto num_r;
+			case 0xef:  // SRL #4,r
+				op = SRL;
+			num_r:
+				sprintf(dd->ops,"%03Xh,%s", b[len++] & 0x0f, regs[r]);
+				dd->opt = OPT_1_n_1;
+			break;
+
+			case 0x04:  // PUSH r
+				op = PUSH;
+				goto just_r;
+			case 0x05:  // POP r
+				op = POP;
+				goto just_r;
+			case 0x06:  // CPL r
+				op = CPL;
+				goto just_r;
+			case 0x07:  // NEG r
+				op = NEG;
+				goto just_r;
+			case 0x0d:  // UNLK r
+				op = UNLK;
+				goto just_r;
+			case 0x10:  // DAA r
+				op = DAA;
+				goto just_r;
+			case 0x12:  // EXTZ r
+				op = EXTZ;
+				goto just_r;
+			case 0x13:  // EXTS r
+				op = EXTS;
+				goto just_r;
+			case 0x14:  // PAA r
+				op = PAA;
+				goto just_r;
+			case 0x16:  // MIRR r
+				op = MIRR;
+				goto just_r;
+			case 0x19:  // MULA rr
+				op = MULA;
+			just_r:
+				sprintf(dd->ops,"%s",regs[r]);
+				dd->opt = OPT_1_n_1;
+			break;
+
+			case 0x1c:  // DJNZ [r],$+3/4+d8
+				base = dd->addr + get8(b+len); //dd->base + dd->pos + get8(b+len);
+				op = DJNZ;
+				dd->opt = OPT_1_n_1_1;
+
+				if (len > 2) {
+					// using extended r code..
+					base += 4;
+				} else {
+					base += 3;
+				}
+				if (r == 2 && zz == 0) {  // i.e. r == B
+					sprintf(dd->ops,"%07Xh",base);
+				} else {
+					sprintf(dd->ops,"%s,%07Xh",regs[r],base);
+				}
+				len++;
+			break;
+
+			case 0x0e:  // BS1F A,r
+				op = BS1F;
+				goto a_r;
+			case 0x0f:  // BS1B A,r
+				op = BS1B;
+				goto a_r;
+			case 0x28:  // ANDCF A,r
+				op = ANDCF;
+				goto a_r;
+			case 0x29:  // ORCF A,r
+				op = ORCF;
+				goto a_r;
+			case 0x2a:  // XORCF A,r
+				op = XORCF;
+				goto a_r;
+			case 0x2b:  // LDCF A,r
+				op = LDCF;
+				goto a_r;
+			case 0x2c:  // STCF A,r
+				op = STCF;
+				goto a_r;
+			case 0xf8:  // RLC A,r
+				op = RLC;
+				goto a_r;
+			case 0xf9:  // RRC A,r
+				op = RRC;
+				goto a_r;
+			case 0xfa:  // RL A,r
+				op = RL;
+				goto a_r;
+			case 0xfb:  // RR A,r
+				op = RR;
+				goto a_r;
+			case 0xfc:  // SLA A,r
+				op = SLA;
+				goto a_r;
+			case 0xfd:  // SRA A,r
+				op = SRA;
+				goto a_r;
+			case 0xfe:  // SLL A,r
+				op = SLL;
+				goto a_r;
+			case 0xff:  // SRL A,r
+				op = SRL;
+			a_r:
+				sprintf(dd->ops,"A,%s",regs[r]);
+				dd->opt = OPT_1_n_1;
+			break;
+
+			case 0x2e:  // LDC cr,r
+				dd->opt = OPT_1_n_1_1;
+				op = LDC;
+				sprintf(dd->ops,"%s,%s",cr_names[b[len++]],regs[r]);
+			break;
+			case 0x2f:  // LDC r,cr
+				dd->opt = OPT_1_n_1_1;
+				op = LDC;
+				sprintf(dd->ops,"%s,%s",regs[r],cr_names[b[len++]]);
+			break;
+
+			case 0x0c:  // LINK r,d16
+				op = LINK;
+				sprintf(dd->ops,"%s,%05Xh",regs[r],get16(&b[len]) );
+				len += 2;
+				dd->opt = OPT_1_n_1_2;
+			break;
+      
+			case 0x38:    // MINC1 #,r
+				op = MINC1;
+				goto minc_mdec;
+			case 0x39:    // MINC2 #,r
+				op = MINC2;
+				goto minc_mdec;
+			case 0x3a:    // MINC4 #,r
+				op = MINC4;
+				goto minc_mdec;
+			case 0x3c:    // MDEC1 #,r
+				op = MDEC1;
+				goto minc_mdec;
+			case 0x3d:    // MDEC2 #,r
+				op = MDEC2;
+				goto minc_mdec;
+			case 0x3e:    // MDEC4 #,r
+				op = MDEC4;
+			minc_mdec:
+				sprintf(dd->ops,"%05Xh,%s",get16u(b+len),regs[r]);
+				len += 2;
+				dd->opt = OPT_1_n_1_1;
+			break;
+
+			default:
+				// unknown opcode..
+				return 0;
+		}
+	}
+
+	dd->opf = opcode_names[op];
+	return len;
+}
+
+int tlcs900hdebugger::decode_zz_R( struct tlcs900d *dd ) {
+	unsigned char *b = getCodePtr(dd->addr); //dd->buffer + dd->pos;
+	char *a;
+	int zz = getzz(b);
+	int R = getR(b);
+	int w = *b & 0x07;
+	int len = 1;
+	enum opcodes op = INVALID;
+
+	switch (zz) {
+		case 0x00:
+			a = "A";
+		break;
+		case 0x01:
+			a = "WA";
+		break;
+		case 0x02:
+		case 0x03:
+		default:
+			// Not a valid instruction..
+			return 0;
+	}
+
+	//
+	// Following many opcodes:
+	//   LDI<W>  [(XDE+),(XhL+)]    83+zz:10
+	//   LDI<W>  (XIX+),(XIY+)      85+zz:10
+	//   LDIR<W> [(XDE+),(XhL+)]    83+zz:11
+	//   LDIR<W> (XIX+),(XIY+)      85+zz:11
+	//   LDD<W>  [(XDE-),(XhL-)]    83+zz:12
+	//   LDD<W>  (XIX-),(XIY-)      85+zz:12
+	//   LDDR<W> [(XDE-),(XhL-)]    83+zz:13
+	//   LDDR<W> (XIX-),(XIY-)      85+zz:13
+
+	//   CPI     [A/WA,(R+)]        80+zz+R:14
+	//   CPIR    [A/WA,(R+)]        80+zz+R:15
+	//   CPD     [A/WA,(R-)]        80+zz+R:16
+	//   CPDR    [A/WA,(R-)]        80+zz+R:17
+	//
+	// Here the zz is actually 0z because none
+	// of these instructions use longword size.
+	//
+	//
+
+	switch (b[len++]) {
+		case 0x10:  // LDI
+			if ( zz == 1 ) {
+				op = LDIW;
+			} else {
+				op = LDI;
+			}
+		case 0x11:  // LDIR
+			if (op == INVALID)
+			{
+				if ( zz == 1 ) {
+					op = LDIRW;
+				} else {
+					op = LDIR;
+				}
+			}
+			if (w == 5) {
+				strcpy(dd->ops,"(XIX+),(XIY+)");
+			} else {
+				strcpy(dd->ops,"[(XDE+),(XhL+)]");
+			}
+		break;
+		case 0x12:  // LDD
+			if ( zz == 1 ) {
+				op = LDDW;
+			} else {
+				op = LDD;
+			}
+		case 0x13:  // LDDR
+			if (op == INVALID) {
+				if ( zz == 1 ) {
+					op = LDDR;
+				} else {
+					op = LDDRW;
+				}
+			}
+			if (w == 5) {
+				strcpy(dd->ops,"(XIX-),(XIY-)");
+			} else {
+				strcpy(dd->ops,"[(XDE-),(XhL-)]");
+			}
+		break;
+		case 0x14:  // CPI [A/WA,(R+)]
+			op = CPI;
+		case 0x15:  // CPIR [A/WA,(R+)]
+			if (op == INVALID) { op = CPIR; }
+			sprintf(dd->ops,"%s,(%s+)",a,R32_names[R]);
+		break;
+		case 0x16:  // CPD [A/WA,(R-)]
+			op = CPD;
+		case 0x17:  // CPDR [A/WA,(R-)]
+			if (op == INVALID) { op = CPDR; }
+			sprintf(dd->ops,"%s,(%s-)",a,R32_names[R]);
+		break;
+		default:
+		// ...
+		return 0;
+	}
+
+	dd->opf = opcode_names[op];
+	dd->opt = OPT_1_1_0;
+	return len;
+}
+
+int tlcs900hdebugger::decode_zz_mem( struct tlcs900d * dd)
+{
+	unsigned char *b = getCodePtr(dd->addr); //dd->buffer + dd->pos;
+	char m[MEM_LEN];
+	unsigned char c;
+	int len;
+	int mem;
+	int zz;
+	int n;
+	int R;
+	enum opcodes op = INVALID;
+	char **Regs;
+
+	//
+
+	dd->opt = OPT_1_n_1;
+
+	//
+	// Following many opcodes:
+	//  LD<W> (#16),(mem)   80+zz+mem:19:#16  +
+
+	// regs
+
+	//  LD   R,(mem)        80+zz+mem:20+R  +
+	//  ADD  R,(mem)        80+zz+mem:80+R  +
+	//  ADC  R,(mem)        80+zz+mem:90+R  +
+	//  SUB  R,(mem)        80+zz+mem:a0+R  +
+	//  SBC  R,(mem)        80+zz+mem:b0+R  +
+	//  CP   R,(mem)        80+zz+mem:f0+R  +
+	//  MUL  RR,(mem)       80+zz+mem:40+R  +
+	//  MULS RR,(mem)       80+zz+mem:48+R  +
+	//  DIV  RR,(mem)       80+zz+mem:50+R  +
+	//  DIVS RR,(mem)       80+zz+mem:58+R  +
+	//  AND  R,(mem)        80+zz+mem:c0+R  +
+	//  OR   R,(mem)        80+zz+mem:e0+R  +
+	//  XOR  R,(mem)        80+zz+mem:d0+R  +
+
+	//  EX (mem),R          80+zz+mem:30+R  +
+	//  ADD (mem),R         80+zz+mem:88+R  +
+	//  ADC (mem),R         80+zz+mem:98+R  +
+	//  SUB (mem),R         80+zz+mem:a8+R  +
+	//  SBC (mem),R         80+zz+mem:b8+R  +
+	//  CP (mem),R          80+zz+mem:f8+R  +
+	//  AND (mem),R         80+zz+mem:c8+R  +
+	//  OR (mem),R          80+zz+mem:e8+R  +
+	//  XOR (mem),R         80+zz+mem:d8+R  +
+
+	// inc/dec 1-8
+
+	//  INC<W> #3,(mem)     80+zz+mem:60+#3 +
+	//  DEC<W> #3,(mem)     80+zz+mem:68+#3 +
+
+	// 8 or 16 bits..
+
+	//  ADD<W> (mem),#			80+zz+mem:38:#  +
+	//  ADC<W> (mem),#      80+zz+mem:39:#  +
+	//  SUB<W> (mem),#      80+zz+mem:3a:#  +
+	//  SBC<W> (mem),#      80+zz+mem:3b:#  +
+	//  CP<W> (mem),#       80+zz+mem:3f:#  +
+	//  AND<W> (mem),#      80+zz+mem:3c:#  +
+	//  OR<W> (mem),#     	80+zz+mem:3e:#  +
+	//  XOR<W> (mem),#      80+zz+mem:3d:#  +
+
+	// 'Fixed' codes..
+
+	//  PUSH<W> (mem)       80+zz+mem:04    +
+	//  RLC<W> (mem)        80+zz+mem:78    +
+	//  RRC<W> (mem)        80+zz+mem:79    + 
+	//  RL<W> (mem)         80+zz+mem:7a    +
+	//  RR<W> (mem)         80+zz+mem:7b    +
+	//  SLA<W> (mem)        80+zz+mem:7c    +
+	//  SRA<W> (mem)        80+zz+mem:7d    +
+	//  SLL<W> (mem)        80+zz+mem:7e    +
+	//  SRL<W> (mem)        80+zz+mem:7f    +
+	//  RLD [A],(mem)       80+mem:06       +
+	//  RRD [A],(mem)       80+mem:07       +
+	//
+
+	zz  = getzz(b);
+	mem = getmem(b);  
+
+	//
+
+	if ((len = retmem(b,m,mem)) == 0) {
+		return 0;
+	}
+
+	R = getR(b+len);
+	n = get3(b+len); 
+	c = b[len++];
+
+	switch (zz) {
+		case 0:
+			Regs = R8_names;
+		break;
+		case 1:
+			Regs = R16_names;
+		break;
+		case 2:
+			Regs = R32_names;
+		break;
+	}
+
+	//
+
+	if (c == 0x04 || c == 0x06 || c == 0x07 || c == 0x19 ||
+		c >= 0x78 && c < 0x80  || c >= 0x38 && c < 0x40)  {
+
+		switch (c) {
+			case 0x38:  // ADD<W> (mem),#
+				op = zz == 0 ? ADD : ADDW;
+				goto w_mem_nro;
+			case 0x39:  // ADC<W> (mem),#
+				op = zz == 0 ? ADC : ADCW;
+				goto w_mem_nro;
+			case 0x3a:  // SUB<W> (mem),#
+				op = zz == 0 ? SUB : SUBW;
+				goto w_mem_nro;
+			case 0x3b:  // SBC<W> (mem),#
+				op = zz == 0 ? SBC : SBCW;
+				goto w_mem_nro;
+			case 0x3c:  // AND<W> (mem),# 
+				op = zz == 0 ? AND : ANDW;
+				goto w_mem_nro;
+			case 0x3d:  // XOR<W> (mem),#
+				op = zz == 0 ? XOR : XORW;
+				goto w_mem_nro;
+			case 0x3e:  // OR<W> (mem),#
+				op = zz == 0 ? OR : ORW;
+				goto w_mem_nro;
+			case 0x3f:  // CP<W> (mem),#
+				op = zz == 0 ? CP : CPW;
+			w_mem_nro:
+				if (zz == 0) {
+					sprintf(dd->ops,"%s,%03Xh",m,get8u(b+len));
+					len++;
+					dd->opt = OPT_1_n_1_1;
+				} else if (zz == 1) {
+					sprintf(dd->ops,"%s,%05Xh",m,get16u(b+len));
+					len += 2;
+					dd->opt = OPT_1_n_1_2;
+				} else {
+					// Got this far but this is not a valid instruction..
+					return 0;
+				}
+			break;
+
+			case 0x19:  // LD<W> (#16),(mem)
+				dd->opt = OPT_1_n_1_2;
+				op = zz == 0 ? LD : LDW;
+				sprintf(dd->ops,"(%04Xh),%s",get16u(b+len),m);
+				len += 2;
+			break;
+
+			case 0x06:  // RLD [A],(mem)
+				op = RLD;
+			case 0x07:  // RRD [A],(mem)
+				if (op == INVALID) { op = RRD; }
+				sprintf(dd->ops,"[A],%s",m);
+			break;
+
+			case 0x04:  // PUSH<W> (mem)
+				op = zz == 0 ? PUSH : PUSHW;
+				goto w_mem;
+			case 0x78:  // RLC<W> (mem)
+				op = zz == 0 ? RLC : RLCW;
+				goto w_mem;
+			case 0x79:  // RRC<W> (mem)
+				op = zz == 0 ? RRC : RRCW;
+				goto w_mem;
+			case 0x7a:  // RL<W> (mem)
+				op = zz == 0 ? RL : RLW;
+				goto w_mem;
+			case 0x7b:  // RR<W> (mem)
+				op = zz == 0 ? RR : RRW;
+				goto w_mem;
+			case 0x7c:  // SLA<W> (mem)
+				op = zz == 0 ? SLA : SLAW;
+				goto w_mem;
+			case 0x7d:  // SRA<W> (mem)
+				op = zz == 0 ? SRA : SRAW;
+				goto w_mem;
+			case 0x7e:  // SLL<W> (mem) 
+				op = zz == 0 ? SLL : SLLW;
+				goto w_mem;
+			case 0x7f:  // SRL<W> (mem)
+				op = zz == 0 ? SRL : SRLW;
+			w_mem:
+				sprintf(dd->ops,"%s",m);
+			break;
+			default:
+				return 0;
+		}
+	} else {
+		switch ( c & 0xf8 ) {
+			case 0x60:  // INC<W> (mem)
+				op = zz == 0 ? INC : INCW;
+			case 0x68:  // DEC<W> (mem)
+				if (op == INVALID) { op = zz == 0 ? DEC : DECW; }
+				if (n == 0) { n = 8; }
+				sprintf(dd->ops,"%d,%s",n,m);
+			break;
+
+			case 0x20:  // LD R,(mem)
+				op = LD;
+				goto r_mem;
+			case 0x80:  // ADD R,(mem)
+				op = ADD;
+				goto r_mem;
+			case 0x90:  // ADC R,(mem)
+				op = ADC;
+				goto r_mem;
+			case 0xa0:  // SUB R,(mem)
+				op = SUB;
+				goto r_mem;
+			case 0xb0:  // SBC R,(mem)
+				op = SBC;
+				goto r_mem;
+			case 0xf0:  // CP R,(mem)
+				op = CP;
+				goto r_mem;
+			case 0x40:  // MUL RR,(mem)
+				op = MUL;
+				goto r_mem;
+			case 0x48:  // MULS RR,(mem)
+				op = MULS;
+				goto r_mem;
+			case 0x50:  // DIV RR,(mem)
+				op = DIV;
+				goto r_mem;
+			case 0x58:  // DIVS RR,(mem)
+				op = DIVS;
+				goto r_mem;
+			case 0xc0:  // AND R,(mem)
+				op = AND;
+				goto r_mem;
+			case 0xe0:  // OR R,(mem)
+				op = OR;
+				goto r_mem;
+			case 0xd0:  // XOR R,(mem)
+				op = XOR;
+			r_mem:
+				sprintf(dd->ops,"%s,%s",Regs[R],m);
+			break;
+
+			case 0x30:  // EX (mem),R
+				op = EX;
+				goto mem_r;
+			case 0x88:  // ADD (mem),R
+				op = ADD;
+				goto mem_r;
+			case 0x98:  // ADC (mem),R
+				op = ADC;
+				goto mem_r;
+			case 0xa8:  // SUB (mem),R
+				op = SUB;
+				goto mem_r;
+			case 0xb8:  // SBC (mem),R
+				op = SBC;
+				goto mem_r;
+			case 0xf8:  // CP (mem),R
+				op = CP;
+				goto mem_r;
+			case 0xc8:  // AND (mem),R
+				op = AND;
+				goto mem_r;
+			case 0xe8:  // OR (mem),R
+				op = OR;
+				goto mem_r;
+			case 0xd8:  // XOR (mem),R
+				op = XOR;
+			mem_r:
+				sprintf(dd->ops,"%s,%s",m,Regs[R]);
+			break;
+			default:
+				return 0;
+		}
+	}
+
+	//
+	dd->opf = opcode_names[op];
+	return len;
 }
 
 #endif

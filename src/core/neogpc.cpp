@@ -166,10 +166,16 @@ void neogpc_disassemble()
 	} while ( addr < 0x00400000 ); // detect 32-bit rom size
 }
 
-// Do this in a more elegant fashion
-char ** test_getlist()
+// Get a disassembled line
+char * neogpc_asmprint(unsigned int addr)
 {
-	return g_tlcs900hDebugger.m_decodeList;
+	return g_tlcs900hDebugger.getBufString(addr);
+}
+
+// Get the increment debug
+int neogpc_asminc(unsigned int addr)
+{
+	return g_tlcs900hDebugger.getInc(addr);
 }
 
 #endif

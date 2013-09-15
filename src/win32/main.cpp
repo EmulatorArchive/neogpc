@@ -449,17 +449,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 							g_tlcs900hActive = true;
 							//setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger
 
-							// Temporary!
-							char ** tmpList = test_getlist();
-							
 							SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_RESETCONTENT, 0, 0);
-							for ( unsigned int i = 0; i < 0x7D; i++)
+							for(int loop = 0, addr = g_currentRom->startPC; loop < 0x40; loop++)
 							{
-								if ( tmpList[i] != NULL )
-								{
-									SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(tmpList[i]));
-								}
+								SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(neogpc_asmprint(addr)));
+								addr += neogpc_asminc(addr);
 							}
+
+							char pcStr[16];
+							sprintf(pcStr, "%06x", g_currentRom->startPC);
+							SetDlgItemText(g_tlcs900hDebugHwnd, IDC_PC, (LPCSTR)pcStr);
 
 							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
 							return TRUE;
@@ -612,8 +611,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			LOG("Rom loaded, NGPC loaded, lets rock and roll!");
 
 #ifdef NEOGPC_DEBUGGER
+			// Setup  abreakpoint at the start
+			neogpc_setbreakpoint(g_currentRom->startPC);
+
 			// If the debugger is on, disassemble our rom
 			neogpc_disassemble();
+
+			// Write text to the window?
 #endif
 
 			m_emuState = EMU_ROM_RUNNING;
