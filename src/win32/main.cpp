@@ -43,8 +43,8 @@ int g_scale;
 int g_fullscreen;
 
 // Debugger Variables
-HWND g_tlcs900hDebugHwnd;
-BOOL g_tlcs900hActive;
+static HWND g_tlcs900hDebugHwnd;
+static BOOL g_tlcs900hActive;
 
 // Current time, previous time
 INT64 m_ticksPerSecond;
@@ -152,6 +152,33 @@ INT_PTR CALLBACK TLCS900hProc(
 	int addr, bpIdx;
     switch(uMsg)
     {
+		case WM_INITDIALOG:
+			g_tlcs900hActive = true;
+			//setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger	
+
+			SCROLLINFO si;
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_ALL;
+			si.nMin = 0;
+			si.nMax = 0x10000;
+			si.nPos = 0x20000-g_currentRom->startPC;
+			si.nPage = 20;
+			SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);
+
+			//Disassemble(hDebug, IDC_DEBUGGER_DISASSEMBLY, IDC_DEBUGGER_DISASSEMBLY_VSCR, si.nPos);
+
+			SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_OPCODE_LIST, LB_RESETCONTENT, 0, 0);
+			for(int loop = 0, addr = g_currentRom->startPC; loop < 0x40; loop++)
+			{
+				SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(neogpc_asmprint(addr)));
+				addr += neogpc_asminc(addr);
+			}
+
+			char pcStr[16];
+			sprintf(pcStr, "%06x", g_currentRom->startPC);
+			SetDlgItemText(hwndDlg, IDC_PC, (LPCSTR)pcStr);
+			return TRUE;
+		break;
         case WM_COMMAND:
 			switch(LOWORD(wParam))
             {
@@ -444,24 +471,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					if ( g_tlcs900hActive == false )
 					{
 						g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), 0/*hwnd*/, TLCS900hProc);
-						if ( g_tlcs900hDebugHwnd != NULL )
+						if ( g_tlcs900hDebugHwnd )
 						{
-							g_tlcs900hActive = true;
-							//setupTLCS900hDebugger(g_tlcs900hDebugHwnd);	// Setup our TLCS900h debugger
-
-							SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_RESETCONTENT, 0, 0);
-							for(int loop = 0, addr = g_currentRom->startPC; loop < 0x40; loop++)
-							{
-								SendDlgItemMessage(g_tlcs900hDebugHwnd, IDC_TLCS900HD_OPCODE_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)(neogpc_asmprint(addr)));
-								addr += neogpc_asminc(addr);
-							}
-
-							char pcStr[16];
-							sprintf(pcStr, "%06x", g_currentRom->startPC);
-							SetDlgItemText(g_tlcs900hDebugHwnd, IDC_PC, (LPCSTR)pcStr);
-
-							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOW);
-							return TRUE;
+							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOWNORMAL);
+							SetForegroundWindow(g_tlcs900hDebugHwnd);
 						}
 					}
 #endif
