@@ -386,6 +386,10 @@ tlcs900hdebugger::tlcs900hdebugger(void)
 
 	// cr1eate a page of character memory (speed hack)
 	bufPage = new char[0x200000 * MAX_INSTR_LEN];
+	for ( int i = 0; i < 0x200000; i++)
+	{
+		bufPage[i*MAX_INSTR_LEN] = 0;
+	}
 }
 
 // Destructor

@@ -54,18 +54,7 @@ int				z80State;		// number of cycles passed
 int				z80Running;		// Is z80 running?
 unsigned char	z80Opcode;		// last read opcode
 unsigned short	z80Regs[12];	// Z80 CPU registers
-#define Z80BC	0
-#define Z80DE	1
-#define Z80HL	2
-#define Z80SP	3
-#define Z80AF	4
-#define Z80PC	5
-#define Z80IX	6
-#define Z80IY	7
-#define Z80AF2	8
-#define Z80BC2	9
-#define Z80DE2	10
-#define Z80HL2	11
+
 unsigned char	*z80RegsB[8]=	// pointers to byte registers
 {
 	((unsigned char *)&z80Regs[Z80BC])+1,		// B

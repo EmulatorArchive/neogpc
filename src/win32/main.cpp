@@ -150,7 +150,7 @@ void Disassemble(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr)
 	for(int i = 0; i < 28; i++)
 	{
 		if ( addr == pcAddr )
-			sprintf(tmpBuf, "%06x:>> %s", addr, neogpc_asmprint(addr));
+			sprintf(tmpBuf, "> %06x: %s", addr, neogpc_asmprint(addr));
 		else
 			sprintf(tmpBuf, "%06x: %s", addr, neogpc_asmprint(addr));
 		strcat(debug_str, tmpBuf);
@@ -264,6 +264,49 @@ void UpdateRegs(HWND hwndDlg)
 		SendMessage( GetDlgItem( hwndDlg, IDC_SF ), BM_SETCHECK, BST_CHECKED, 0);
 	else
 		SendMessage( GetDlgItem( hwndDlg, IDC_SF ), BM_SETCHECK, BST_UNCHECKED, 0);
+
+	// Update the Z80 regs
+	sprintf(regStr, "%04x", z80Regs[Z80AF]);
+	SetDlgItemText(hwndDlg, IDC_Z80_AF, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80BC]);
+	SetDlgItemText(hwndDlg, IDC_Z80_BC, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80DE]);
+	SetDlgItemText(hwndDlg, IDC_Z80_DE, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80HL]);
+	SetDlgItemText(hwndDlg, IDC_Z80_HL, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80AF2]);
+	SetDlgItemText(hwndDlg, IDC_Z80_AF2, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80BC2]);
+	SetDlgItemText(hwndDlg, IDC_Z80_BC2, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80DE2]);
+	SetDlgItemText(hwndDlg, IDC_Z80_DE2, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80HL2]);
+	SetDlgItemText(hwndDlg, IDC_Z80_HL2, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80IX]);
+	SetDlgItemText(hwndDlg, IDC_Z80_IX, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80IY]);
+	SetDlgItemText(hwndDlg, IDC_Z80_IY, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", Z80IFF);
+	SetDlgItemText(hwndDlg, IDC_Z80_IFF, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", Z80IM);
+	SetDlgItemText(hwndDlg, IDC_Z80_IM, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80PC]);
+	SetDlgItemText(hwndDlg, IDC_Z80_PC, (LPCSTR)regStr);
+
+	sprintf(regStr, "%04x", z80Regs[Z80SP]);
+	SetDlgItemText(hwndDlg, IDC_Z80_SP, (LPCSTR)regStr);
 }
 
 INT_PTR CALLBACK TLCS900hProc(
@@ -281,6 +324,7 @@ INT_PTR CALLBACK TLCS900hProc(
 	int addr, bpIdx;
 	SCROLLINFO si;
 	bool updateDisas = false;
+	int incStep;
     switch(uMsg)
     {
 		case WM_INITDIALOG:
@@ -291,12 +335,14 @@ INT_PTR CALLBACK TLCS900hProc(
 			si.nMin = 0;
 			si.nMax = 0x200000;
 			si.nPos = gen_regsPC-0x200000;
-			si.nPage = 0x5000;
+			si.nPage = 0x20;
 			SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);
 
 			Disassemble(hwndDlg, gen_regsPC, si.nPos+0x200000);
 			UpdateRegs(hwndDlg);
 			
+			SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
+
 			return TRUE;
 		break;
         case WM_COMMAND:
@@ -357,9 +403,11 @@ INT_PTR CALLBACK TLCS900hProc(
 					neogpc_pausedebugger();
 					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
 					UpdateRegs(hwndDlg);
+					SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
 				break;
 				case IDC_TLCS900HD_RESUME:
 					neogpc_resumedebugger();
+					SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Running");
 				break;
 				case IDC_TLCS900HD_STEP:
 					neogpc_stepdebugger();
@@ -384,16 +432,28 @@ INT_PTR CALLBACK TLCS900hProc(
 					case SB_TOP:
 					case SB_BOTTOM: break;
 					case SB_LINEUP: si.nPos--; updateDisas=true; break;
-					case SB_LINEDOWN: si.nPos++; updateDisas=true; break;
-					case SB_PAGEUP: si.nPos-=si.nPage; updateDisas=true; break;
-					case SB_PAGEDOWN: si.nPos+=si.nPage; updateDisas=true; break;
+					case SB_LINEDOWN:
+						incStep = neogpc_asminc(si.nPos+0x200000);
+						if ( incStep == 0 )
+							si.nPos++;
+						else
+							si.nPos += incStep;
+						updateDisas=true; 
+					break;
+					case SB_PAGEUP:
+						si.nPos-=si.nPage;
+						updateDisas=true;
+					break;
+					case SB_PAGEDOWN:
+						si.nPos+=si.nPage;
+						updateDisas=true; break;
 					case SB_THUMBPOSITION: //break;
 					case SB_THUMBTRACK: si.nPos = si.nTrackPos; updateDisas=true; break;
 				}
 				SetScrollInfo((HWND)lParam,SB_CTL,&si,TRUE);
 				if ( updateDisas == true )
 				{
-					//Disassemble(hwndDlg, gen_regsPC, si.nPos+0x200000);
+					Disassemble(hwndDlg, gen_regsPC, si.nPos+0x200000);
 				}
 			}
 			// Disassemble
@@ -784,6 +844,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			if ( g_tlcs900hActive == true )
 			{
 				SendMessage(g_tlcs900hDebugHwnd, WM_COMMAND, IDC_TLCS900HD_PAUSE, 0);
+				SetDlgItemText(g_tlcs900hDebugHwnd, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
 			}
 #endif
 

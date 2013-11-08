@@ -30,5 +30,21 @@ int z80Step();
 void z80Print(FILE *output);
 void z80orIFF(unsigned char bits);
 
+#define Z80BC	0
+#define Z80DE	1
+#define Z80HL	2
+#define Z80SP	3
+#define Z80AF	4
+#define Z80PC	5
+#define Z80IX	6
+#define Z80IY	7
+#define Z80AF2	8
+#define Z80BC2	9
+#define Z80DE2	10
+#define Z80HL2	11
+
+extern unsigned short	z80Regs[12];	// Z80 CPU registers
+extern unsigned char	Z80IFF;		// the interrupt flip flops
+extern unsigned char	Z80IM;		// the interrupt mode as set by the IM instruction
 
 #endif // !defined(AFX_Z80_H__28525BE2_C77A_11D3_8645_00A0241D2A65__INCLUDED_)

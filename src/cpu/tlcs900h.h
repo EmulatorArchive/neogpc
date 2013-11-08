@@ -82,6 +82,8 @@ void tlcs_execute(int cycles);
 
 #include "../cpu/tlcs900hdebugger.h"
 
+#include "../cpu/z80.h"
+
 // Create our global tlcs900h debugger
 extern tlcs900hdebugger g_tlcs900hDebugger;
 
