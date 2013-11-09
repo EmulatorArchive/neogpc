@@ -139,31 +139,9 @@ void InitIni()
 
 }
 
-// Decode X number of lines
-void Disassemble(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr)
-{
-	char tmpBuf[1024];
-	strcpy(debug_str, ""); // null it out
-	unsigned int addr = startAddr;
-	int incStep = 0;
+#ifdef NEOGPC_DEBUGGER
 
-	for(int i = 0; i < 28; i++)
-	{
-		if ( addr == pcAddr )
-			sprintf(tmpBuf, "> %06x: %s", addr, neogpc_asmprint(addr));
-		else
-			sprintf(tmpBuf, "%06x: %s", addr, neogpc_asmprint(addr));
-		strcat(debug_str, tmpBuf);
-		strcat(debug_str, "\r\n");
-		incStep = neogpc_asminc(addr);
-		if ( incStep == 0 )
-			incStep = 1;
-		addr += incStep;
-	}
-	SetDlgItemText(hwndDlg, IDC_TLCS900HD_OPCODE_LIST, debug_str);
-}
-
-// Update the regs
+// Update the registers for the TLCS900h and the Z80
 void UpdateRegs(HWND hwndDlg)
 {
 	char regStr[16];
@@ -309,6 +287,31 @@ void UpdateRegs(HWND hwndDlg)
 	SetDlgItemText(hwndDlg, IDC_Z80_SP, (LPCSTR)regStr);
 }
 
+// Decode X number of lines
+void Disassemble(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr)
+{
+	char tmpBuf[1024];
+	strcpy(debug_str, ""); // null it out
+	unsigned int addr = startAddr;
+	int incStep = 0;
+
+	for(int i = 0; i < 28; i++)
+	{
+		if ( addr == pcAddr )
+			sprintf(tmpBuf, "> %06x: %s", addr, neogpc_asmprint(addr));
+		else
+			sprintf(tmpBuf, "%06x: %s", addr, neogpc_asmprint(addr));
+		strcat(debug_str, tmpBuf);
+		strcat(debug_str, "\r\n");
+		incStep = neogpc_asminc(addr);
+		if ( incStep == 0 )
+			incStep = 1;
+		addr += incStep;
+	}
+	SetDlgItemText(hwndDlg, IDC_TLCS900HD_OPCODE_LIST, debug_str);
+	UpdateRegs(hwndDlg);
+}
+
 INT_PTR CALLBACK TLCS900hProc(
   HWND hwndDlg,
   UINT uMsg,
@@ -316,7 +319,6 @@ INT_PTR CALLBACK TLCS900hProc(
   LPARAM lParam
 )
 {
-#ifdef NEOGPC_DEBUGGER
 	char lpszPassword[1024]; // overflow, but you can't automate it
 	WORD cchPassword;
 	char * lpszCheck;
@@ -337,11 +339,8 @@ INT_PTR CALLBACK TLCS900hProc(
 			si.nPos = gen_regsPC-0x200000;
 			si.nPage = 0x20;
 			SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);
-
-			Disassemble(hwndDlg, gen_regsPC, si.nPos+0x200000);
-			UpdateRegs(hwndDlg);
-			
 			SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
+			Disassemble(hwndDlg, gen_regsPC, si.nPos+0x200000);
 
 			return TRUE;
 		break;
@@ -385,39 +384,128 @@ INT_PTR CALLBACK TLCS900hProc(
 					if ( IsAllHex(lpszCheck) && strlen(lpszCheck) <= 8 )
 					{
 						addr = strtol(lpszCheck, NULL, 16);
-						sprintf(listStr, "[%i] 0x%08X", 0, addr);
-						bpIdx = neogpc_setbreakpoint(addr); // try 0x0020016c
-						neogpc_setbreakpointName(bpIdx, (const char*)listStr);
-						SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_RESETCONTENT, 0, 0);
-						SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_ADDSTRING, 0, (LPARAM)(LPCSTR)neogpc_getbreakpointBuffer(bpIdx));
+						bpIdx = neogpc_setbreakpoint(addr);
+						if ( bpIdx != -1 )
+						{
+							sprintf(listStr, "[%i] 0x%08X", bpIdx, addr);
+							SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_ADDSTRING, 0, (LPARAM)listStr);
+							SendDlgItemMessage(hwndDlg, IDE_TLCS900HD_ADD_ADDRESS, WM_SETTEXT, 0, (LPARAM)"");
+						}
+						else
+						{
+							MessageBox(hwndDlg, "Invalid Breakpoint Address.. Cannot add two breakpoints at the same location", "Alert", MB_OK);
+						}
 					}
 					else
 					{
-						MessageBox(0, "Invalid Breakpoint Address.. Format: 0x0020016C or 0x20016C", "Alert", MB_OK);
+						MessageBox(hwndDlg, "Invalid Breakpoint Address.. Format: 0x20016C or 20016C", "Alert", MB_OK);
 					}
 				break;
 				case IDC_TLCS900HD_REMOVE_BREAKPOINT:
-					neogpc_deletebreakpoint(0);
+					//neogpc_deletebreakpoint(0);
+					bpIdx = SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_GETCURSEL , 0, 0);
+					lpszCheck = new char[1024];
+					SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_GETTEXT, bpIdx, (LPARAM)lpszCheck);
+					bpIdx = SendDlgItemMessage(hwndDlg, IDC_TLCS900HD_BREAKPOINT_LIST, LB_DELETESTRING , bpIdx, 0);
+					// Parse out the actual breakpoint index from the text
+					if ( lpszCheck[2] == ']' )
+					{
+						lpszCheck[2] == '\0';
+					}
+					else if ( lpszCheck[3] == ']' )
+					{
+						lpszCheck[3] == '\0';
+					}
+					bpIdx = atoi(&(lpszCheck[1]));
+					neogpc_deletebreakpoint(bpIdx);
+					delete [] lpszCheck;
 				break;
 				case IDC_TLCS900HD_PAUSE:
 					neogpc_pausedebugger();
+					win_sound_pause();
 					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
-					UpdateRegs(hwndDlg);
 					SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
+					si.cbSize = sizeof(SCROLLINFO);
+					si.fMask = SIF_ALL;
+					GetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si);
+					si.nPos = gen_regsPC-0x200000;
+					SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);	
 				break;
 				case IDC_TLCS900HD_RESUME:
 					neogpc_resumedebugger();
+					win_sound_reset();
 					SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Running");
 				break;
-				case IDC_TLCS900HD_STEP:
-					neogpc_stepdebugger();
+				case IDC_TLCS900HD_STEPIN:
+					neogpc_stepindebugger();
 					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
-					UpdateRegs(hwndDlg);
+				break;
+				case IDC_TLCS900HD_STEPOVER:
+					neogpc_stepoverdebugger();
+					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
 				break;
 				case IDC_TLCS900HD_CLOSE:
 					neogpc_cleardebugger();
 					DestroyWindow(hwndDlg);
 					return TRUE;
+				break;
+				case IDC_TLCS900HD_GOTO_ADDRESS:
+					// Get number of characters. 
+                    cchPassword = (WORD) SendDlgItemMessage(hwndDlg, 
+                                                            IDE_TLCS900HD_GOTO_ADDRESS, 
+                                                            EM_LINELENGTH, 
+                                                            (WPARAM) 0, 
+                                                            (LPARAM) 0);
+
+                    // Put the number of characters into first word of buffer.
+					if ( cchPassword > 1024 )
+						cchPassword = (DWORD)1024;
+
+                    *((LPWORD)lpszPassword) = cchPassword;
+
+                    // Get the characters. 
+                    SendDlgItemMessage(hwndDlg, 
+                                       IDE_TLCS900HD_GOTO_ADDRESS,
+                                       EM_GETLINE,
+                                       (WPARAM) 0,       // line 0 
+                                       (LPARAM) lpszPassword); 
+
+                    // Null-terminate the string. 
+                    lpszPassword[cchPassword] = 0;
+
+					// Format 0x0020016c
+					if ( strstr(lpszPassword, "0x") == lpszPassword )
+					{
+						lpszCheck = &(lpszPassword[2]);
+					}	 
+					else
+					{
+						lpszCheck = lpszPassword;
+					}
+
+					if ( IsAllHex(lpszCheck) && strlen(lpszCheck) <= 8 )
+					{
+						addr = strtol(lpszCheck, NULL, 16);
+						Disassemble(hwndDlg, gen_regsPC, addr);
+						si.cbSize = sizeof(SCROLLINFO);
+						si.fMask = SIF_ALL;
+						GetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si);
+						si.nPos = addr-0x200000;
+						SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);
+						SendDlgItemMessage(hwndDlg, IDE_TLCS900HD_GOTO_ADDRESS, WM_SETTEXT, 0, (LPARAM)"");
+					}
+					else
+					{
+						MessageBox(hwndDlg, "Invalid Goto Address.. Format: 0x20016C or 20016C", "Alert", MB_OK);
+					}
+				break;
+				case IDC_TLCS900HD_GOTO_PC:
+					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
+					si.cbSize = sizeof(SCROLLINFO);
+					si.fMask = SIF_ALL;
+					GetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si);
+					si.nPos = gen_regsPC-0x200000;
+					SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);
 				break;
 			}
 			break;
@@ -460,6 +548,7 @@ INT_PTR CALLBACK TLCS900hProc(
 			break;
 		case WM_DESTROY:
 			g_tlcs900hActive = false;
+			win_sound_reset();
 			break;
 		default:
 			break;
@@ -797,6 +886,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 				// Emulate the system
 				neogpc_emulate(1); // pretend 60 fps (17ms)
+#ifdef NEOGPC_DEBUGGER
+				// Check to see if we hit a breakpoint (redraw the debug screen)
+				if ( g_tlcs900hActive == true && g_tlcs900hDebugger.state() == DEBUGGER_BREAK )
+				{
+					SendMessage(g_tlcs900hDebugHwnd, WM_COMMAND, IDC_TLCS900HD_PAUSE, 0);
+					SetDlgItemText(g_tlcs900hDebugHwnd, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
+				}
+#endif
 
 				// Update video buffers as needed
 				video_update();
@@ -806,15 +903,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 				m_numFrames = 0;
 
-				Sleep(1); // add some sleep (CPU cool-down)
+				Sleep(10); // add some sleep (CPU cool-down)
 			}
 
 			m_lastTime = m_currentTime;
-		}
-		// Is the TLCS900h Debugger Active?
-		if ( g_tlcs900hActive == true )
-		{
-		}		
+		}	
 		// Should we load a rom?
 		if ( EMU_LOAD_ROM == m_emuState )
 		{
@@ -832,14 +925,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			LOG("Rom loaded, NGPC loaded, lets rock and roll!");
 
 #ifdef NEOGPC_DEBUGGER
-			// Setup  abreakpoint at the start
-			neogpc_setbreakpoint(g_currentRom->startPC);
-
 			// If the debugger is on, disassemble our rom
 			neogpc_disassemble();
 
-			// Pause the debugger... can we send a signal yet?
-			
 			// If the debugger is active, pause and disassemble
 			if ( g_tlcs900hActive == true )
 			{

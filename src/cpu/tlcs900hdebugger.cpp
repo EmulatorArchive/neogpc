@@ -10,19 +10,6 @@
 // ROM, RAM, Bios
 #include "../core/memory.h"
 
-// How many bytes will each function need
-enum {
-	NONE = 0,			// pushA
-	ONE_BYTE,			// ei #$1
-	TWO_BYTES,			// call16 #$2001
-	THREE_BYTES,		// jp24 #$200101
-	FOUR_BYTES,			// ldRIL #$04040404
-	DECODE_INSTR,		// Decode80 - DecodeF5
-	NONE_THREE_MEM,		// 10111mmm
-	NONE_THREE_REG,		// 10001rrr
-	NONE_THREE_BITS		// SWI #5 11111xxx
-};
-
 enum opcodes {
 	LD=0,	LDW,  PUSH,	PUSHW,  POP,	POPW,   LDA,	  LDAR,
 	EX,		MIRR, LDI,  LDIW,	  LDIR, LDIRW,	LDD,	  LDDW,
@@ -381,7 +368,6 @@ tlcs900hdebugger::tlcs900hdebugger(void)
 	for ( int i = 0; i < 100; i++)
 	{
 		m_breakpointList[i].active = false; // set all breakpoints to nothing
-		m_breakpointList[i].buf[0] = 0;
 	}
 
 	// cr1eate a page of character memory (speed hack)
@@ -419,7 +405,16 @@ tlcs900hBreakpoint * tlcs900hdebugger::getBreakpointList()
 // Set our breakpoint
 int tlcs900hdebugger::setBreakpoint(unsigned int address)
 {
-	for ( int i = 0; i < 100; i++)
+	int i;
+	// Check for a previously created breakpoint with this address first
+	for ( i = 0; i < 100; i++ )
+	{
+		if ( m_breakpointList[i].address == address )
+		{
+			return -1;
+		}
+	}
+	for ( i = 0; i < 100; i++ )
 	{
 		if ( m_breakpointList[i].active == false )
 		{
@@ -429,20 +424,6 @@ int tlcs900hdebugger::setBreakpoint(unsigned int address)
 		}
 	}
 	return -1; // nothing found
-}
-
-// Set Breakpoint name
-void tlcs900hdebugger::setBreakpointName(const unsigned int idx, const char * name)
-{
-	if ( idx >= 0 && idx < 100 )
-	{
-		strcpy(m_breakpointList[idx].buf, name);
-	}
-}
-
-char * tlcs900hdebugger::getBreakpointName(const unsigned int idx)
-{
-	return m_breakpointList[idx].buf;
 }
 
 // Remove a breakpoint
@@ -462,6 +443,12 @@ void tlcs900hdebugger::clearBreakpoints()
 	}
 }
 
+// break is different, because the debugger needs to update
+void tlcs900hdebugger::breakp()
+{
+	m_debugState = DEBUGGER_BREAK;
+}
+
 // pause the running tlcs900h emulation
 void tlcs900hdebugger::pause()
 {
@@ -469,9 +456,15 @@ void tlcs900hdebugger::pause()
 }
 
 // step to the next opcode
-void tlcs900hdebugger::step()
+void tlcs900hdebugger::stepin()
 {
-	m_debugState = DEBUGGER_STEP;
+	m_debugState = DEBUGGER_STEPIN;
+}
+
+// step-over to the next opcode
+void tlcs900hdebugger::stepover()
+{
+	m_debugState = DEBUGGER_STEPOVER;
 }
 
 // continue where we left off

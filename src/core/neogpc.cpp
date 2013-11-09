@@ -115,16 +115,6 @@ int neogpc_setbreakpoint(unsigned int address)
 	return g_tlcs900hDebugger.setBreakpoint(address);
 }
 
-void neogpc_setbreakpointName(unsigned int idx, const char * name)
-{
-	g_tlcs900hDebugger.setBreakpointName(idx, name);
-}
-
-char * neogpc_getbreakpointBuffer(unsigned int idx)
-{
-	return g_tlcs900hDebugger.getBreakpointName(idx);
-}
-
 // remove the breakpoint
 void neogpc_deletebreakpoint(int index)
 {
@@ -132,9 +122,15 @@ void neogpc_deletebreakpoint(int index)
 }
 
 // Step the debugger
-void neogpc_stepdebugger()
+void neogpc_stepindebugger()
 {
-	g_tlcs900hDebugger.step();
+	g_tlcs900hDebugger.stepin();
+}
+
+// Step the debugger
+void neogpc_stepoverdebugger()
+{
+	g_tlcs900hDebugger.stepover();
 }
 
 // Pause the debugger

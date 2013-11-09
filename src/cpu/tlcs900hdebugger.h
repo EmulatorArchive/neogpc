@@ -10,15 +10,16 @@
 typedef struct _tlcs900hBreakpoint {
 	unsigned int address;
 	bool active;
-	char buf[1024];
 } tlcs900hBreakpoint;
 
 // Debug states
 enum {
 	DEBUGGER_IDLE = 0,
 	DEBUGGER_PAUSE,
+	DEBUGGER_BREAK,
 	DEBUGGER_RESUME,
-	DEBUGGER_STEP,
+	DEBUGGER_STEPIN,
+	DEBUGGER_STEPOVER,
 	DEBUGGER_OVER,
 	DEBUGGER_INTO
 };
@@ -55,8 +56,6 @@ public:
 
 	tlcs900hBreakpoint * getBreakpointList();			// Return all breakpoints
 	int setBreakpoint(unsigned int);		// Set a breakpoint at X location
-	void setBreakpointName(const unsigned int, const char *);
-	char * getBreakpointName(const unsigned int);
 	void removeBreakpoint(int);	// Disable breakpoint (index)
 	void enableBreakpoint(int);	// Enable breakpoint (index)
 	void disableBreakpoint(int); // Disable breakpoint (index)
@@ -68,10 +67,12 @@ public:
 	unsigned int decodeTlcs900h(const unsigned int);	// decode the current PC, returning bytes eaten
 	char * lastInstruction();		// get the last instruction that was decoded
 
-	void pause();	// pause the running tlcs900h emulation
-	void step();	// step to the next opcode
-	void resume();	// continue where we left off
-	void clear();   // clear the state machine (debugger acknowledges we are done)
+	void breakp();			// trigger breakpoint on the running tlcs900h emulation, 
+	void pause();			// pause the running tlcs900h emulation
+	void stepin();			// step to the next opcode
+	void stepover();		// step over the next opcode (incase its a call)
+	void resume();			// continue where we left off
+	void clear();			// clear the state machine (debugger acknowledges we are done)
 	unsigned char state();	// what state is our debugger in?
 
 private:

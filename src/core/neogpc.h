@@ -20,7 +20,8 @@
 	void neogpc_setbreakpointName(unsigned int, const char *);
 	char * neogpc_getbreakpointBuffer(unsigned int);
 	void neogpc_deletebreakpoint(int);
-	void neogpc_stepdebugger();
+	void neogpc_stepindebugger();
+	void neogpc_stepoverdebugger();
 	void neogpc_pausedebugger();
 	void neogpc_resumedebugger();
 	void neogpc_cleardebugger();
