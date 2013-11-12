@@ -78,6 +78,7 @@
     <ClCompile Include="..\cpu\tlcs900h.cpp" />
     <ClCompile Include="..\cpu\tlcs900hdebugger.cpp" />
     <ClCompile Include="..\cpu\z80.cpp" />
+    <ClCompile Include="debugger.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="input_directx.cpp" />
     <ClCompile Include="main.cpp" />
@@ -98,6 +99,7 @@
     <ClInclude Include="..\cpu\tlcs900h.h" />
     <ClInclude Include="..\cpu\tlcs900hdebugger.h" />
     <ClInclude Include="..\cpu\z80.h" />
+    <ClInclude Include="debugger.h" />
     <ClInclude Include="ini.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="input_directx.h" />

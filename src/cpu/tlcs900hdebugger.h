@@ -6,10 +6,17 @@
 // Do not include code if we are not using the debugger
 #ifdef NEOGPC_DEBUGGER
 
+// Breakpoint types
+enum {
+	BREAKPOINT_ONCE = 0,
+	BREAKPOINT_PERSIST
+};
+
 // TLCS 900h Breakpoint
 typedef struct _tlcs900hBreakpoint {
 	unsigned int address;
 	bool active;
+	unsigned char type;
 } tlcs900hBreakpoint;
 
 // Debug states
@@ -55,7 +62,7 @@ public:
 	~tlcs900hdebugger(void);
 
 	tlcs900hBreakpoint * getBreakpointList();			// Return all breakpoints
-	int setBreakpoint(unsigned int);		// Set a breakpoint at X location
+	int setBreakpoint(unsigned int, unsigned char);		// Set a breakpoint at X location
 	void removeBreakpoint(int);	// Disable breakpoint (index)
 	void enableBreakpoint(int);	// Enable breakpoint (index)
 	void disableBreakpoint(int); // Disable breakpoint (index)

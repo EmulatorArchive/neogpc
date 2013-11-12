@@ -4,7 +4,7 @@
 //#define NEOGPC_LOG_ENABLED
 
 // Version of our NeoGPC build
-#define NEOGPC_VERSION "0.1RC1"
+#define NEOGPC_VERSION "1.1"
 
 // Uncomment to enable NeoGPC TLCS900h Debugger
 #define NEOGPC_DEBUGGER
@@ -16,8 +16,7 @@
 	class tlcs900hdebugger; // forward declare so we know this is accessible
 	extern tlcs900hdebugger g_tlcs900hDebugger;
 
-	int neogpc_setbreakpoint(unsigned int);
-	void neogpc_setbreakpointName(unsigned int, const char *);
+	int neogpc_setbreakpoint(unsigned int, unsigned char);
 	char * neogpc_getbreakpointBuffer(unsigned int);
 	void neogpc_deletebreakpoint(int);
 	void neogpc_stepindebugger();

@@ -110,9 +110,9 @@ void neogpc_shutdown()
 #ifdef NEOGPC_DEBUGGER
 
 // set the breakpoint
-int neogpc_setbreakpoint(unsigned int address)
+int neogpc_setbreakpoint(unsigned int address, unsigned char type)
 {
-	return g_tlcs900hDebugger.setBreakpoint(address);
+	return g_tlcs900hDebugger.setBreakpoint(address, type);
 }
 
 // remove the breakpoint

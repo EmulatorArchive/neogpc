@@ -7938,6 +7938,11 @@ inline int tlcs_step()
 			{
 				// We hit a breakpoint, break and pause!
 				g_tlcs900hDebugger.breakp();
+				// Remove the breakpoint if its a one-off
+				if ( breakList[i].type == BREAKPOINT_ONCE )
+				{
+					g_tlcs900hDebugger.removeBreakpoint(i);
+				}
 				return 0;
 			}
 		}
@@ -8086,8 +8091,6 @@ void tlcs_execute(int cycles)
 	}
 	else if ( g_tlcs900hDebugger.state() == DEBUGGER_STEPOVER )
 	{
-		int elapsed;
-		int hCounter = ngOverflow;
 		unsigned char nextOp = *(my_pc);
 		unsigned char decodeOp;
 		bool skipCode = false;
@@ -8097,9 +8100,17 @@ void tlcs_execute(int cycles)
 		{
 			skipCode = true;
 		}
+		else if ( instr_table[nextOp] == decode80 )
+		{
+			decodeOp = *(my_pc+1);
+			if ( decode_table80[decodeOp] = ldir )
+			{
+				skipCode = true;
+			}
+		}
 		else if ( instr_table[nextOp] == decodeB0 )
 		{
-			decodeOp = *(my_pc+3);
+			decodeOp = *(my_pc+1);
 			if ( decode_tableB0[decodeOp] == callccM300 || decode_tableB0[decodeOp] == callccM301 || decode_tableB0[decodeOp] == callccM302 || 
 				decode_tableB0[decodeOp] == callccM303 || decode_tableB0[decodeOp] == callccM304 || decode_tableB0[decodeOp] == callccM305 || 
 				decode_tableB0[decodeOp] == callccM306 || decode_tableB0[decodeOp] == callccM307 || decode_tableB0[decodeOp] == callccM308 || 
@@ -8110,9 +8121,33 @@ void tlcs_execute(int cycles)
 				skipCode = true;
 			}
 		}
+		else if ( instr_table[nextOp] == decode90 )
+		{
+			decodeOp = *(my_pc+1);
+			if ( decode_table90[decodeOp] == ldirw )
+			{
+				skipCode = true;
+			}
+		}
+		else if ( instr_table[nextOp] == decodeC8 )
+		{
+			decodeOp = *(my_pc+1);
+			if ( decode_tableC8[decodeOp] == djnzB )
+			{
+				skipCode = true;
+			}
+		}
+		else if ( instr_table[nextOp] == decodeD8 )
+		{
+			decodeOp = *(my_pc+1);
+			if ( decode_tableD8[decodeOp] == djnzW )
+			{
+				skipCode = true;
+			}
+		}
 		else if ( instr_table[nextOp] == decodeF0 )
 		{
-			decodeOp = *(my_pc+3);
+			decodeOp = *(my_pc+1);
 			if ( decode_tableF0[decodeOp] == callccM300 || decode_tableF0[decodeOp] == callccM301 || decode_tableF0[decodeOp] == callccM302 || 
 				decode_tableF0[decodeOp] == callccM303 || decode_tableF0[decodeOp] == callccM304 || decode_tableF0[decodeOp] == callccM305 || 
 				decode_tableF0[decodeOp] == callccM306 || decode_tableF0[decodeOp] == callccM307 || decode_tableF0[decodeOp] == callccM308 || 
@@ -8126,78 +8161,14 @@ void tlcs_execute(int cycles)
 
 		if ( skipCode == true )
 		{
-			while ( instr_table[nextOp] != reti && instr_table[nextOp] != ret &&
-				instr_table[nextOp] != retd) {
-				// ignore cycles requested, give one TLCS900h step
-				elapsed = tlcs_step();
-
-				tlcsTimers(elapsed);
-				elapsed *= tlcsClockMulti;
-				soundStep(elapsed); // Z80 step
-
-				hCounter -= elapsed;
-				// Horizontal line happened
-				if ( hCounter < 0 )
-				{
-					graphicsBlit(true);
-					ngpSoundExecute();
-					hCounter+= 515; // Arbitrary hscan line count? 6144000 / 515?
-					if (*scanlineY < 151 || *scanlineY == 198)
-					{
-						// HBlank interrupt
-						if (tlcsMemReadByte(0x8000)&0x40)
-						{
-							tlcsTI0(); // also breakpoint this?? TI0?
-						}
-					}
-					else if (*scanlineY == 152)
-					{
-						// VBlank
-						if (tlcsMemReadByte(0x8000)&0x80)
-							tlcs_interrupt(2); // trigger interrupt
-					}
-				}
-
-				ngOverflow = hCounter; // we did not go over 6.144MHz in one step, so no overflow
-				
-				nextOp = *(my_pc);
-			}
+			nextOp = g_tlcs900hDebugger.getInc(gen_regsPC);
+			g_tlcs900hDebugger.setBreakpoint(gen_regsPC+nextOp, BREAKPOINT_ONCE);
+			g_tlcs900hDebugger.resume();
 		}
-
-		// ignore cycles requested, give one TLCS900h step
-		elapsed = tlcs_step();
-
-		tlcsTimers(elapsed);
-		elapsed *= tlcsClockMulti;
-		soundStep(elapsed); // Z80 step
-
-		hCounter -= elapsed;
-		// Horizontal line happened
-		if ( hCounter < 0 )
+		else
 		{
-			graphicsBlit(true);
-			ngpSoundExecute();
-			hCounter+= 515; // Arbitrary hscan line count? 6144000 / 515?
-			if (*scanlineY < 151 || *scanlineY == 198)
-			{
-				// HBlank interrupt
-				if (tlcsMemReadByte(0x8000)&0x40)
-				{
-					tlcsTI0(); // also breakpoint this?? TI0?
-				}
-			}
-			else if (*scanlineY == 152)
-			{
-				// VBlank
-				if (tlcsMemReadByte(0x8000)&0x80)
-					tlcs_interrupt(2); // trigger interrupt
-			}
+			g_tlcs900hDebugger.stepin();
 		}
-
-		ngOverflow = hCounter; // we did not go over 6.144MHz in one step, so no overflow
-
-		// Pause our debugger again after a step
-		//g_tlcs900hDebugger.pause();
 	}
 	else
 	{

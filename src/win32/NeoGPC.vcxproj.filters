@@ -81,6 +81,9 @@
     <ClCompile Include="..\cpu\tlcs900hdebugger.cpp">
       <Filter>Source Files\CPU</Filter>
     </ClCompile>
+    <ClCompile Include="debugger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="video.h">
@@ -139,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="..\cpu\tlcs900hdebugger.h">
       <Filter>Header Files\CPU</Filter>
+    </ClInclude>
+    <ClInclude Include="debugger.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

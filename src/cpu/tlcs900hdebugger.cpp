@@ -403,13 +403,13 @@ tlcs900hBreakpoint * tlcs900hdebugger::getBreakpointList()
 }
 
 // Set our breakpoint
-int tlcs900hdebugger::setBreakpoint(unsigned int address)
+int tlcs900hdebugger::setBreakpoint(unsigned int address, unsigned char type)
 {
 	int i;
 	// Check for a previously created breakpoint with this address first
 	for ( i = 0; i < 100; i++ )
 	{
-		if ( m_breakpointList[i].address == address )
+		if ( m_breakpointList[i].address == address && m_breakpointList[i].type == type)
 		{
 			return -1;
 		}
@@ -419,6 +419,7 @@ int tlcs900hdebugger::setBreakpoint(unsigned int address)
 		if ( m_breakpointList[i].active == false )
 		{
 			m_breakpointList[i].address = address;
+			m_breakpointList[i].type = type;
 			m_breakpointList[i].active = true;
 			return i; // return the breakpoint we set
 		}

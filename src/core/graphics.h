@@ -1,7 +1,7 @@
 #pragma once
 
 // Graphics core for NeoGPC
-//  - Lucipher Oct 21 2012
+//  - Cthulhu32 Oct 21 2012
 
 bool graphics_init();
 void graphics_blit();
