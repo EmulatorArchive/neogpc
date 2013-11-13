@@ -75,13 +75,13 @@
     <ClCompile Include="..\core\neopopsound.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="windebugger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\cpu\tlcs900hdebugger.cpp">
       <Filter>Source Files\CPU</Filter>
     </ClCompile>
     <ClCompile Include="debugger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="memview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,13 +137,13 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windebugger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\cpu\tlcs900hdebugger.h">
       <Filter>Header Files\CPU</Filter>
     </ClInclude>
     <ClInclude Include="debugger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

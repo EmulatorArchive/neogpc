@@ -2,7 +2,16 @@
 
 #ifdef NEOGPC_DEBUGGER
 
-char debug_str[35000] = {0};
+// Debugger Variables
+HWND g_tlcs900hDebugHwnd;
+BOOL g_tlcs900hActive;
+BOOL g_tlcs900hUpdateDebug;
+
+HWND g_Z80DebugHwnd;
+BOOL g_Z80Active;
+BOOL g_Z80UpdateDebug;
+
+static char debug_str[35000] = {0};
 
 // Uses Tokenize
 bool IsAllHex(char * must_be_hex)
@@ -218,6 +227,10 @@ INT_PTR CALLBACK TLCS900hProc(
         case WM_COMMAND:
 			switch(LOWORD(wParam))
             {
+				case WM_DESTROY: // close?
+					DestroyWindow(hwndDlg);
+					return TRUE;
+				break;
 				case IDC_TLCS900HD_ADD_BREAKPOINT:
 					// Get number of characters. 
                     cchPassword = (WORD) SendDlgItemMessage(hwndDlg, 
@@ -318,11 +331,13 @@ INT_PTR CALLBACK TLCS900hProc(
 					neogpc_stepoverdebugger();
 					//Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
 				break;
+				/*
 				case IDC_TLCS900HD_CLOSE:
 					neogpc_cleardebugger();
 					DestroyWindow(hwndDlg);
 					return TRUE;
 				break;
+				*/
 				case IDC_TLCS900HD_GOTO_ADDRESS:
 					// Get number of characters. 
                     cchPassword = (WORD) SendDlgItemMessage(hwndDlg, 
@@ -420,6 +435,8 @@ INT_PTR CALLBACK TLCS900hProc(
 			}
 			// Disassemble
 			break;
+		case WM_CLOSE:
+			break;
 		case WM_DESTROY:
 			g_tlcs900hActive = false;
 			win_sound_reset();
@@ -430,4 +447,24 @@ INT_PTR CALLBACK TLCS900hProc(
 
     return FALSE;
 }
+
+// Open the TLCS900h debugger
+void openTlcs900hDebugger()
+{
+	if ( g_tlcs900hActive == false )
+	{
+		g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), 0/*hwnd*/, TLCS900hProc);
+		if ( g_tlcs900hDebugHwnd )
+		{
+			ShowWindow(g_tlcs900hDebugHwnd, SW_SHOWNORMAL);
+			SetForegroundWindow(g_tlcs900hDebugHwnd);
+		}
+	}
+}
+
+// Open the Z80 debugger
+void openZ80Debugger()
+{
+}
+
 #endif

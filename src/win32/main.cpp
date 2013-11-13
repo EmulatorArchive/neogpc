@@ -17,7 +17,6 @@
 #include "video.h"
 #include "winsound.h"
 #include "input.h"
-#include "debugger.h"
 #include "resource.h"
 
 #include "ini.h"  // Feather-ini-parser http://code.google.com/p/feather-ini-parser/
@@ -34,7 +33,10 @@
 #include "../core/flash.h"
 
 // NeoGPC Win32 includes
-#include "../win32/windebugger.h"
+#ifdef NEOGPC_DEBUGGER
+#include "debugger.h"
+#include "memview.h"
+#endif
 
 bool isRunning = false;
 bool isPaused = false;
@@ -42,11 +44,6 @@ bool isPaused = false;
 // Settings INI read values
 int g_scale;
 int g_fullscreen;
-
-// Debugger Variables
-HWND g_tlcs900hDebugHwnd;
-BOOL g_tlcs900hActive;
-BOOL g_tlcs900hUpdateDebug;
 
 // Current time, previous time
 INT64 m_ticksPerSecond;
@@ -338,17 +335,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 						CheckMenuItem(hSubMenu, ID_SCALE5X_NGPC, MF_CHECKED);
 					}
 				break;
+				case ID_DEBUG_MEMORYEDITOR:
+#ifdef NEOGPC_DEBUGGER
+					openMemoryEditor();
+#endif
+				break;
 				case ID_DEBUG_TLCS900H:
 #ifdef NEOGPC_DEBUGGER
-					if ( g_tlcs900hActive == false )
-					{
-						g_tlcs900hDebugHwnd = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_TLCS900HDEBUGGER), 0/*hwnd*/, TLCS900hProc);
-						if ( g_tlcs900hDebugHwnd )
-						{
-							ShowWindow(g_tlcs900hDebugHwnd, SW_SHOWNORMAL);
-							SetForegroundWindow(g_tlcs900hDebugHwnd);
-						}
-					}
+					openTlcs900hDebugger();
+#endif
+				break;
+				case ID_DEBUG_Z80:
+#ifdef NEOGPC_DEBUGGER
+					openZ80Debugger();
 #endif
 				break;
             }
@@ -406,8 +405,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Initialize our input driver
 	input_init(hInstance, g_hwnd);
 
+#ifdef NEOGPC_DEBUGGER
 	// Debugger Variables
 	g_tlcs900hActive = false;
+
+	g_memViewActive = false;
+#endif
 
 	// We haven't quit yet
 	m_emuState = EMU_NO_ROM;
@@ -429,10 +432,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 					TranslateMessage(&Msg);
 					DispatchMessage(&Msg);
 				}
-			}
-			else
-			{
-				int debug = 0;
 			}
 		}
 
@@ -475,6 +474,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 						SendMessage(g_tlcs900hDebugHwnd, WM_COMMAND, IDC_TLCS900HD_PAUSE, 0);
 						SetDlgItemText(g_tlcs900hDebugHwnd, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
 					}
+					UpdateWindow(g_tlcs900hDebugHwnd);
+				}
+				if ( g_memViewActive == true )
+				{
+					DisplayMemoryEditor();
+					UpdateWindow(g_memViewHwnd);
 				}
 #endif
 

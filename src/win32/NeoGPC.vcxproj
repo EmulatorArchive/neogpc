@@ -82,10 +82,10 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="input_directx.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="memview.cpp" />
     <ClCompile Include="sound_directx.cpp" />
     <ClCompile Include="video.cpp" />
     <ClCompile Include="video_directx.cpp" />
-    <ClCompile Include="windebugger.cpp" />
     <ClCompile Include="winsound.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -103,11 +103,11 @@
     <ClInclude Include="ini.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="input_directx.h" />
+    <ClInclude Include="memview.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sound_directx.h" />
     <ClInclude Include="video.h" />
     <ClInclude Include="video_directx.h" />
-    <ClInclude Include="windebugger.h" />
     <ClInclude Include="winsound.h" />
   </ItemGroup>
   <ItemGroup>
