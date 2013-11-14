@@ -16,7 +16,7 @@ extern BOOL g_Z80Active;
 extern BOOL g_Z80UpdateDebug;
 
 void UpdateRegs(HWND hwndDlg);
-void Disassemble(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr);
+void DisassembleTlcs900h(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr);
 INT_PTR CALLBACK TLCS900hProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void openTlcs900hDebugger();

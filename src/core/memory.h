@@ -22,6 +22,9 @@ extern unsigned char memBios[];
 // Special flag for input state
 extern unsigned char memInputState;
 
+// Real bios load
+extern bool memRealBios;
+
 // Memory for NeoGPC
 void memory_init();
 

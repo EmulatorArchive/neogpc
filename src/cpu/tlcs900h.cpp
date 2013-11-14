@@ -7403,10 +7403,20 @@ void tlcs_init()
     set_cregs();
 
     // neogeo pocket color specific settings for running rom dumps
-    gen_regsPC = mem_readL(0x0020001c) & 0x00ffffff;
+    //gen_regsPC = mem_readL(0x0020001c) & 0x00ffffff;
 
 //    if(realBIOSloaded)
 //        gen_regsPC = 0xFF1800;  //this is where Koyote starts when loading BIOS, but it doesn't work for me
+
+	// If we loaded the real bios, go to that PC instead
+	if ( memRealBios == true )
+	{
+		gen_regsPC = 0xFF970A; // Start of BIOS ROM according to ngpctech.txt
+	}
+	else
+	{
+		gen_regsPC = mem_readL(0x0020001c) & 0x00ffffff;
+	}
 
     gen_regsXNSP = gen_regsXSP = 0x00006C00;
     my_pc = get_address(gen_regsPC);

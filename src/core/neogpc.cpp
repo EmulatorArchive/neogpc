@@ -152,7 +152,7 @@ void neogpc_cleardebugger()
 	g_tlcs900hDebugger.resume();
 }
 
-// Disassemble the ROM
+// Disassemble the ROM + Bios ROM
 void neogpc_disassemble()
 {
 	unsigned long addr = g_currentRom->startPC; //0x00200040; // 0x000000 - 0xFFFFFF
@@ -160,6 +160,13 @@ void neogpc_disassemble()
 	{
 		addr += g_tlcs900hDebugger.decodeTlcs900h(addr);
 	} while ( addr < 0x00400000 ); // detect 32-bit rom size
+	
+	// Disassemble the BIOS as well
+	addr = 0xFF0000;
+	do
+	{
+		addr += g_tlcs900hDebugger.decodeTlcs900h(addr);
+	} while ( addr < 0x00FFFFFF );
 }
 
 // Get a disassembled line

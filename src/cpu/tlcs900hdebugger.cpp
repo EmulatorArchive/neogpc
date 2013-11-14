@@ -370,9 +370,9 @@ tlcs900hdebugger::tlcs900hdebugger(void)
 		m_breakpointList[i].active = false; // set all breakpoints to nothing
 	}
 
-	// cr1eate a page of character memory (speed hack)
-	bufPage = new char[0x200000 * MAX_INSTR_LEN];
-	for ( int i = 0; i < 0x200000; i++)
+	// create a page of character memory (speed hack)
+	bufPage = new char[0x20FFFF * MAX_INSTR_LEN];
+	for ( int i = 0; i < 0x20FFFF; i++)
 	{
 		bufPage[i*MAX_INSTR_LEN] = 0;
 	}
@@ -387,13 +387,21 @@ tlcs900hdebugger::~tlcs900hdebugger(void)
 
 int tlcs900hdebugger::getInc(unsigned int addr)
 {
-	return bufInc[(addr-0x200000)];
+	if ( addr >= 0x200000 && addr < 0x400000 )
+		return bufInc[(addr-0x200000)];
+	else if ( addr >= 0xFF0000 && addr < 0x1000000 )
+		return bufInc[(addr-0xFF0000)];
+	return 0;
 }
 
 // Get the string pointer for the specific address
 char * tlcs900hdebugger::getBufString(unsigned int addr)
 {
-	return &bufPage[(addr-0x200000)*MAX_INSTR_LEN];;
+	if ( addr >= 0x200000 && addr < 0x400000 )
+		return &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
+	else if ( addr >= 0xFF0000 && addr < 0x1000000 )
+		return &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
+	return NULL;
 }
 
 // Get the memory to the breakpoint list
@@ -530,10 +538,16 @@ unsigned char * tlcs900hdebugger::getCodePtr(unsigned long addr)
 unsigned int tlcs900hdebugger::decodeTlcs900h(const unsigned int addr)	// decode the current PC
 {	
 	//unsigned char * b = dd->buffer + dd->pos;
+	unsigned int addrOff = 0;
 
 	// Get our instruction buffer
-	char * instrBuf = &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
-
+	if ( addr >= 0x200000 && addr < 0x400000 )
+		addrOff = 0x200000;
+	else if ( addr >= 0xFF0000 && addr < 0x1000000 )
+		addrOff = 0xDF0000; // (0xFF0000 - 0x200000);
+	else
+		return 1;
+	char * instrBuf = &bufPage[(addr-addrOff)*MAX_INSTR_LEN];
 	char empty[] = "            ";
 	unsigned char * b = getCodePtr(addr);
 	unsigned char mem;

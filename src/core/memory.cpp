@@ -39,6 +39,8 @@ unsigned char memBios   [0x010000];             // 0xFF0000-0xFFFFFF (BIOS)
 
 unsigned char memInputState;
 
+bool memRealBios;
+
 // From RACE emulator
 
 // Make more accurate!
@@ -140,10 +142,56 @@ const unsigned char ngpInterruptCode[] = {
 	0x0E,					      // RET
 };
 
+// Initialize the RACE bios
+void race_bios()
+{
+	unsigned int i, x;
+	// Fake BIOS From RACE emulator
+	// Assume we are not loading a bios for now
+	for(i = 0; i < 0x40; i++)
+	{
+		// Setup our fake jump table
+		memBios[0xe000 + 0x40*i] = 0xc8;
+		memBios[0xe001 + 0x40*i] = 0x1a;
+		memBios[0xe002 + 0x40*i] = i;
+		memBios[0xe003 + 0x40*i] = 0x0e;
+		*((unsigned long *)(&memBios[0xfe00 + 4*i])) = (unsigned long)0x00ffe000 + 0x40 * i;
+	}
+   
+	// setup SWI 1 code & vector
+	x = 0xf000;
+	memBios[x] = 0x17; x++; memBios[x] = 0x03; x++;		// ldf 3
+	memBios[x] = 0x3C; x++;								      // push XIX
+	memBios[x] = 0xC8; x++; memBios[x] = 0xCC; x++;		// and w,1F
+	memBios[x] = 0x1F; x++;
+	memBios[x] = 0xC8; x++; memBios[x] = 0x80; x++;		// add w,w
+	memBios[x] = 0xC8; x++; memBios[x] = 0x80; x++;		// add w,w
+	memBios[x] = 0x44; x++; memBios[x] = 0x00; x++;		// ld XIX,0x00FFFE00
+	memBios[x] = 0xFE; x++; memBios[x] = 0xFF; x++;		//
+	memBios[x] = 0x00; x++;								      //
+	memBios[x] = 0xE3; x++; memBios[x] = 0x03; x++;		// ld XIX,(XIX+W)
+	memBios[x] = 0xF0; x++; memBios[x] = 0xE1; x++;		//
+	memBios[x] = 0x24; x++;								      //
+	memBios[x] = 0xB4; x++; memBios[x] = 0xE8; x++;		// call XIX
+	memBios[x] = 0x5C; x++;								      // pop XIX
+	memBios[x] = 0x07; x++;								      // reti
+	*((unsigned long *)(&memBios[0x00ff04])) = (unsigned long)0x00fff000;
+
+	// setup interrupt codes
+	for(i=0; i< sizeof(ngpInterruptCode); i++) {
+		memBios[0x00f800+i] = ngpInterruptCode[i];
+	}
+
+	// setup interrupt vectors
+	for(i=0; i< sizeof(ngpVectors)/4; i++) {
+		*((unsigned long *)(&memBios[0x00ff00 + 4*i])) = ngpVectors[i];
+	}
+}
+
 // Initialize the Memory
 void memory_init()
 {
-   unsigned int i,x;
+	unsigned int i;
 
    // Zero our input state
    memInputState = 0;
@@ -155,45 +203,32 @@ void memory_init()
    // Zero out bios ROM
    memset(memBios, 0, sizeof(memBios));
 
-   // Fake BIOS From RACE emulator
-   // Assume we are not loading a bios for now
-   for(i = 0; i < 0x40; i++)
+   // Assume false
+   memRealBios = false;
+
+   // Try to load the bios (ngpbios.bin) and set PC to our bios, otherwise do this
+   FILE * biosFile = fopen("ngpbios.bin", "rb");
+   if ( biosFile != NULL )
    {
-      // Setup our fake jump table
-      memBios[0xe000 + 0x40*i] = 0xc8;
-      memBios[0xe001 + 0x40*i] = 0x1a;
-      memBios[0xe002 + 0x40*i] = i;
-      memBios[0xe003 + 0x40*i] = 0x0e;
-      *((unsigned long *)(&memBios[0xfe00 + 4*i])) = (unsigned long)0x00ffe000 + 0x40 * i;
+	   long lSize;
+	   fseek(biosFile, 0, SEEK_END);
+	   lSize = ftell(biosFile);
+	   rewind(biosFile);
+	   // Bios must be 64kb, if so read it into our bios
+	   if ( lSize == 0x10000 )
+	   {
+		   fread(memBios, 1, lSize, biosFile);
+		   memRealBios = true;
+		   fclose(biosFile);
+	   }
+	   else
+	   {
+		   race_bios();
+	   }
    }
-   
-   // setup SWI 1 code & vector
-   x = 0xf000;
-   memBios[x] = 0x17; x++; memBios[x] = 0x03; x++;		// ldf 3
-   memBios[x] = 0x3C; x++;								      // push XIX
-   memBios[x] = 0xC8; x++; memBios[x] = 0xCC; x++;		// and w,1F
-   memBios[x] = 0x1F; x++;
-   memBios[x] = 0xC8; x++; memBios[x] = 0x80; x++;		// add w,w
-   memBios[x] = 0xC8; x++; memBios[x] = 0x80; x++;		// add w,w
-   memBios[x] = 0x44; x++; memBios[x] = 0x00; x++;		// ld XIX,0x00FFFE00
-   memBios[x] = 0xFE; x++; memBios[x] = 0xFF; x++;		//
-   memBios[x] = 0x00; x++;								      //
-   memBios[x] = 0xE3; x++; memBios[x] = 0x03; x++;		// ld XIX,(XIX+W)
-   memBios[x] = 0xF0; x++; memBios[x] = 0xE1; x++;		//
-   memBios[x] = 0x24; x++;								      //
-   memBios[x] = 0xB4; x++; memBios[x] = 0xE8; x++;		// call XIX
-   memBios[x] = 0x5C; x++;								      // pop XIX
-   memBios[x] = 0x07; x++;								      // reti
-   *((unsigned long *)(&memBios[0x00ff04])) = (unsigned long)0x00fff000;
-
-   // setup interrupt codes
-   for(i=0; i< sizeof(ngpInterruptCode); i++) {
-      memBios[0x00f800+i] = ngpInterruptCode[i];
-   }
-
-   // setup interrupt vectors
-   for(i=0; i< sizeof(ngpVectors)/4; i++) {
-      *((unsigned long *)(&memBios[0x00ff00 + 4*i])) = ngpVectors[i];
+   else
+   {
+	   race_bios();
    }
 
    // setup the CPU ram

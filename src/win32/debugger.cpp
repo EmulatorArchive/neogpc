@@ -167,16 +167,18 @@ void UpdateRegs(HWND hwndDlg)
 }
 
 // Decode X number of lines
-void Disassemble(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr)
+void DisassembleTlcs900h(HWND hwndDlg, unsigned int addr)
 {
 	char tmpBuf[1024];
 	strcpy(debug_str, ""); // null it out
-	unsigned int addr = startAddr;
+	
+	bool inBios = false;
+	if ( addr >= 0xFF0000 )
+		inBios = true;
 	int incStep = 0;
-
 	for(int i = 0; i < 28; i++)
 	{
-		if ( addr == pcAddr )
+		if ( addr == gen_regsPC )
 			sprintf(tmpBuf, "> %06x: %s", addr, neogpc_asmprint(addr));
 		else
 			sprintf(tmpBuf, "%06x: %s", addr, neogpc_asmprint(addr));
@@ -186,6 +188,15 @@ void Disassemble(HWND hwndDlg, unsigned int pcAddr, unsigned int startAddr)
 		if ( incStep == 0 )
 			incStep = 1;
 		addr += incStep;
+		if ( inBios == false && addr >= 0x400000 )
+		{
+			inBios = true;
+			addr = 0xFF0000;
+		} else if ( inBios == true && addr > 0xFFFFFF )
+		{
+			// Can't go past here!
+			break;
+		}
 	}
 	SetDlgItemText(hwndDlg, IDC_TLCS900HD_OPCODE_LIST, debug_str);
 	UpdateRegs(hwndDlg);
@@ -308,7 +319,7 @@ INT_PTR CALLBACK TLCS900hProc(
 					g_tlcs900hUpdateDebug = false;
 					neogpc_pausedebugger();
 					win_sound_pause();
-					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
+					DisassembleTlcs900h(hwndDlg, gen_regsPC);
 					SetDlgItemText(hwndDlg, IDC_TLCS900h_DEBUGGER_STATUS, "Paused");
 					si.cbSize = sizeof(SCROLLINFO);
 					si.fMask = SIF_ALL;
@@ -375,7 +386,7 @@ INT_PTR CALLBACK TLCS900hProc(
 					if ( IsAllHex(lpszCheck) && strlen(lpszCheck) <= 8 )
 					{
 						addr = strtol(lpszCheck, NULL, 16);
-						Disassemble(hwndDlg, gen_regsPC, addr);
+						DisassembleTlcs900h(hwndDlg, addr);
 						si.cbSize = sizeof(SCROLLINFO);
 						si.fMask = SIF_ALL;
 						GetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si);
@@ -389,7 +400,7 @@ INT_PTR CALLBACK TLCS900hProc(
 					}
 				break;
 				case IDC_TLCS900HD_GOTO_PC:
-					Disassemble(hwndDlg, gen_regsPC, gen_regsPC);
+					DisassembleTlcs900h(hwndDlg, gen_regsPC);
 					si.cbSize = sizeof(SCROLLINFO);
 					si.fMask = SIF_ALL;
 					GetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si);
@@ -430,7 +441,10 @@ INT_PTR CALLBACK TLCS900hProc(
 				SetScrollInfo((HWND)lParam,SB_CTL,&si,TRUE);
 				if ( updateDisas == true )
 				{
-					Disassemble(hwndDlg, gen_regsPC, si.nPos+0x200000);
+					if ( si.nPos >= 0x200000 )
+						DisassembleTlcs900h(hwndDlg, 0xFF0000 + (si.nPos-0x200000));
+					else
+						DisassembleTlcs900h(hwndDlg, si.nPos+0x200000);
 				}
 			}
 			// Disassemble
