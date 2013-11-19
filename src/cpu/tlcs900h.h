@@ -28,6 +28,14 @@ extern unsigned long
 extern int timer0, timer1, timer2, timer3;
 extern unsigned char ldcRegs[64];
 
+// Clock rates
+#define CLOCK_6144 6144000
+#define CLOCK_3072 3072000
+#define CLOCK_1536 1536000
+#define CLOCK_768 768000
+#define CLOCK_384 384000
+extern unsigned int clockrate;
+
 #define XWA0	0
 #define XBC0	1
 #define XDE0	2

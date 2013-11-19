@@ -96,7 +96,7 @@ bool neogpc_loadrom(char * rom, int romLen, char * romName)
 void neogpc_emulate(unsigned int frames)
 {
    // Emulate X number of frames according to our host FPS
-   tlcs_execute((6*1024*1000) / HOST_FPS); // 6144000 = 6.144 MHz processor
+   tlcs_execute((clockrate) / HOST_FPS); // clock-rate * 1000  example: 6144000 = 6.144 MHz processor
 }
 
 // Shut everything down

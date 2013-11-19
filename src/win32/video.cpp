@@ -41,7 +41,7 @@ BOOL video_init(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         WS_EX_WINDOWEDGE,
         "NeoGPC",
         "NeoGPC - Neo Geo Pocket Color Emulator",
-        WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+        WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN,
         CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_SCALE_WIDTH[scale-1], WINDOW_SCALE_HEIGHT[scale-1],
         NULL, NULL, hInstance, NULL);
 

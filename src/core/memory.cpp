@@ -146,6 +146,14 @@ const unsigned char ngpInterruptCode[] = {
 void race_bios()
 {
 	unsigned int i, x;
+
+   // setup the CPU ram
+   // interrupt priorities, timer settings, transfer settings, etc
+   for(i=0; i<sizeof(ngpcpuram); i++)
+   {
+         memCPURAM[i] = ngpcpuram[i];
+   }
+
 	// Fake BIOS From RACE emulator
 	// Assume we are not loading a bios for now
 	for(i = 0; i < 0x40; i++)
@@ -186,6 +194,41 @@ void race_bios()
 	for(i=0; i< sizeof(ngpVectors)/4; i++) {
 		*((unsigned long *)(&memBios[0x00ff00 + 4*i])) = ngpVectors[i];
 	}
+
+	
+   //koyote.bin handling (what is koyote.bin? a NGPC memory dump?)
+   // memcpy(memRAM, koyote_bin, KOYOTE_BIN_SIZE/*12*1024*/);
+
+   // setup interrupt vectors in RAM (this looks off)
+   for(i=0; i<18; i++) {
+	   *((unsigned long *)(&memRAM[0x2FB8+4*i])) = (unsigned long)0x00FFF800;
+   }
+
+   memRAM[0x2F80] = 0xFF; // Lots of battery power!
+   memRAM[0x2F81] = 0x03;
+   memRAM[0x2F95] = 0x10;
+   memRAM[0x2F91] = 0x10; // Colour bios
+   memRAM[0x2F84] = 0x40; // "Power On" startup
+   memRAM[0x2F85] = 0x00; // No shutdown request
+   memRAM[0x2F86] = 0x00; // No user answer (?)
+   memRAM[0x2F87] = 0x01; // English
+
+   memRAM[0x4000] = 0xC0;		   // Enable generation of VBlanks by default
+   memRAM[0x4004] = 0xFF;	memRAM[0x4005] = 0xFF;
+   memRAM[0x4006] = 0xC6;
+   for(i=0; i<5; i++) { // 0x00070707 0x00070707 what is this purpose?
+      memRAM[0x4101+4*i] = 0x07;	memRAM[0x4102+4*i] = 0x07;	memRAM[0x4103+4*i] = 0x07;
+   }
+   memRAM[0x4118] = 0x07; // ???
+   // What is 0x63E0-0x63FF used for?
+   memRAM[0x43E0] = memRAM[0x43F0] = 0xFF; memRAM[0x43E1] = memRAM[0x43F1] = 0x0F;
+   memRAM[0x43E2] = memRAM[0x43F2] = 0xDD; memRAM[0x43E3] = memRAM[0x43F3] = 0x0D;
+   memRAM[0x43E4] = memRAM[0x43F4] = 0xBB; memRAM[0x43E5] = memRAM[0x43F5] = 0x0B;
+   memRAM[0x43E6] = memRAM[0x43F6] = 0x99; memRAM[0x43E7] = memRAM[0x43F7] = 0x09;
+   memRAM[0x43E8] = memRAM[0x43F8] = 0x77; memRAM[0x43E9] = memRAM[0x43F9] = 0x07;
+   memRAM[0x43EA] = memRAM[0x43FA] = 0x44; memRAM[0x43EB] = memRAM[0x43FB] = 0x04;
+   memRAM[0x43EC] = memRAM[0x43FC] = 0x33; memRAM[0x43ED] = memRAM[0x43FD] = 0x03;
+   memRAM[0x43EE] = memRAM[0x43FE] = 0x00; memRAM[0x43EF] = memRAM[0x43FF] = 0x00;
 }
 
 // Initialize the Memory
@@ -230,47 +273,6 @@ void memory_init()
    {
 	   race_bios();
    }
-
-   // setup the CPU ram
-   // interrupt priorities, timer settings, transfer settings, etc
-   for(i=0; i<sizeof(ngpcpuram); i++)
-   {
-         memCPURAM[i] = ngpcpuram[i];
-   }
-
-   //koyote.bin handling (what is koyote.bin? a NGPC memory dump?)
-   // memcpy(memRAM, koyote_bin, KOYOTE_BIN_SIZE/*12*1024*/);
-
-   // setup interrupt vectors in RAM (this looks off)
-   for(i=0; i<18; i++) {
-	   *((unsigned long *)(&memRAM[0x2FB8+4*i])) = (unsigned long)0x00FFF800;
-   }
-
-   memRAM[0x2F80] = 0xFF; // Lots of battery power!
-   memRAM[0x2F81] = 0x03;
-   memRAM[0x2F95] = 0x10;
-   memRAM[0x2F91] = 0x10; // Colour bios
-   memRAM[0x2F84] = 0x40; // "Power On" startup
-   memRAM[0x2F85] = 0x00; // No shutdown request
-   memRAM[0x2F86] = 0x00; // No user answer (?)
-   memRAM[0x2F87] = 0x01; // English
-
-   memRAM[0x4000] = 0xC0;		   // Enable generation of VBlanks by default
-   memRAM[0x4004] = 0xFF;	memRAM[0x4005] = 0xFF;
-   memRAM[0x4006] = 0xC6;
-   for(i=0; i<5; i++) { // 0x00070707 0x00070707 what is this purpose?
-      memRAM[0x4101+4*i] = 0x07;	memRAM[0x4102+4*i] = 0x07;	memRAM[0x4103+4*i] = 0x07;
-   }
-   memRAM[0x4118] = 0x07; // ???
-   // What is 0x63E0-0x63FF used for?
-   memRAM[0x43E0] = memRAM[0x43F0] = 0xFF; memRAM[0x43E1] = memRAM[0x43F1] = 0x0F;
-   memRAM[0x43E2] = memRAM[0x43F2] = 0xDD; memRAM[0x43E3] = memRAM[0x43F3] = 0x0D;
-   memRAM[0x43E4] = memRAM[0x43F4] = 0xBB; memRAM[0x43E5] = memRAM[0x43F5] = 0x0B;
-   memRAM[0x43E6] = memRAM[0x43F6] = 0x99; memRAM[0x43E7] = memRAM[0x43F7] = 0x09;
-   memRAM[0x43E8] = memRAM[0x43F8] = 0x77; memRAM[0x43E9] = memRAM[0x43F9] = 0x07;
-   memRAM[0x43EA] = memRAM[0x43FA] = 0x44; memRAM[0x43EB] = memRAM[0x43FB] = 0x04;
-   memRAM[0x43EC] = memRAM[0x43FC] = 0x33; memRAM[0x43ED] = memRAM[0x43FD] = 0x03;
-   memRAM[0x43EE] = memRAM[0x43FE] = 0x00; memRAM[0x43EF] = memRAM[0x43FF] = 0x00;
 }
 
 
@@ -299,7 +301,7 @@ unsigned char * get_address(unsigned long addr)
                     memRAM[addr-0x00004000] = 0x03;
                     break;
                 case 0x6F85:
-                    memRAM[addr-0x00004000] = 0x00;
+                   //memRAM[addr-0x00004000] = 0x00; ??
                     break;
                 case 0x6F82:
                     memRAM[addr-0x00004000] = memInputState;
@@ -369,21 +371,55 @@ unsigned char tlcsMemReadByte(unsigned long addr)
       {
          switch (addr)  //Thanks Koyote (RACE!)
          {
-         case 0x6DA2:            // Purpose?
+		 case 0x4000:
+			// Noise Channel & Right Volume
+			 return noiseChip.LastRegister; // ??? how do we do this?
+			//return memRAM[addr-0x00004000];
+			break;
+		 case 0x4001:
+			// Tone Channel & Left Volume
+			 return toneChip.LastRegister; // ??? how do we do this?
+			 //return memRAM[addr-0x00004000];
+			break;
+		 case 0x6DA2:            // Purpose?
             return 0x80;
             break;
-         case 0x6F80:            // Purpose?
+         case 0x6F80:            // Battery Power (0xFF = Lots!)
             return 0xFF;
             break;
-         case 0x6F80+1:          // Purpose?
+         case 0x6F80+1:          // Battery Power (0x3FF = Lots!)
             return 0x03;
-            break;
-         case 0x6F85:            // Purpose?
-            return 0x00;
             break;
          case 0x6F82:
             return memInputState; // get the input state
             break;
+		 case 0x6F83:			// Boot something?
+			return 0x00;
+			break;
+		 case 0x6F84:			// User Boot
+			 return 1<<6;		// Bit 0-4 = 0
+								// Bit 5 = "Resume" startup: 1 = yes, 0 = no
+								// Bit 6 = "Power On" startup: 1 = yes, 0 = no
+								// Bit 7 = "Alarm" startup: 1 = yes, 0 = no
+			 break;
+		 case 0x6F85:            // Shutdown Request?
+            return memRAM[addr-0x00004000];
+            break;
+		 case 0x6F86:			// User Answer
+			 return 0x00;
+			break;
+		 case 0x6F87:			// Language?
+			return 0x01;		// Force English for now
+			break;
+		 case 0x6F88:			// CPU clock
+			return memRAM[addr-0x00004000];
+			break;
+		 case 0x6F95:			// Reset RTC???
+			return 0x00;		// breakpoint here
+			break;
+		 case 0x8000:
+			 return memCPURAM[0xBC];
+			break;
          default:
             return memRAM[addr-0x00004000];
          }
@@ -496,7 +532,35 @@ void tlcsMemWriteByte(unsigned long addr, unsigned char data)
       spritesDirty = true;
       }*/
       if ( addr < 0x00BFFF ) // why would anyone write past 0xBFFF?
-         memRAM[addr-0x00004000] = data;
+	  {
+		  switch (addr)  //Thanks Koyote (RACE!)
+         {
+		  case 0x6F88:	// CPU speed ( bits 0-2 - Clock Speed )
+			  switch(data&5)
+			  {
+			  case 1:
+				  clockrate = CLOCK_3072;
+				break;
+			  case 2:
+				  clockrate = CLOCK_1536;
+			 break;
+			  case 3:
+				  clockrate = CLOCK_768;
+			break;
+			  case 4:
+				  clockrate = CLOCK_384;
+			break;
+			  case 0:
+			  default:
+				  clockrate = CLOCK_6144;
+				  break;
+			  }
+		  break;
+		  default:
+			  break;
+         }
+		  memRAM[addr-0x00004000] = data;
+	  }
       return;
    }
    else if (addr >= 0x00200000 && addr < 0x00400000)

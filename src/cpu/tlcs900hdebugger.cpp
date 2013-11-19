@@ -390,7 +390,7 @@ int tlcs900hdebugger::getInc(unsigned int addr)
 	if ( addr >= 0x200000 && addr < 0x400000 )
 		return bufInc[(addr-0x200000)];
 	else if ( addr >= 0xFF0000 && addr < 0x1000000 )
-		return bufInc[(addr-0xFF0000)];
+		return bufInc[(addr-0xDF0000)];
 	return 0;
 }
 
@@ -400,7 +400,7 @@ char * tlcs900hdebugger::getBufString(unsigned int addr)
 	if ( addr >= 0x200000 && addr < 0x400000 )
 		return &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
 	else if ( addr >= 0xFF0000 && addr < 0x1000000 )
-		return &bufPage[(addr-0x200000)*MAX_INSTR_LEN];
+		return &bufPage[(addr-0xDF0000)*MAX_INSTR_LEN];
 	return NULL;
 }
 
@@ -680,7 +680,7 @@ unsigned int tlcs900hdebugger::decodeTlcs900h(const unsigned int addr)	// decode
 	}
 
 	//return bytesRead;
-	bufInc[(addr-0x200000)] = len;
+	bufInc[(addr-addrOff)] = len;
 
 	return len;
 }

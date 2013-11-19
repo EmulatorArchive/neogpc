@@ -37,6 +37,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 //#include "main.h"
 #include "../cpu/tlcs900h.h"
 #include "../core/memory.h"
@@ -113,6 +114,9 @@ unsigned char SZtable[256];            // zero and sign flags table for faster s
 #ifdef USE_PARITY_TABLE
 unsigned char parityVtable[256];            // zero and sign flags table for faster setting
 #endif
+
+// Clock rate
+unsigned int clockrate;
 
 //#define TCLS900H_PROFILING
 #ifdef TCLS900H_PROFILING
@@ -274,6 +278,8 @@ int  debugIndex, debugCount;
 // wrapper
 int  memoryCycles;
 
+// rtc
+time_t rtcTime;
 
 inline unsigned char mem_readB(unsigned long addr)
 {
@@ -7312,7 +7318,7 @@ void tlcs_init()
     gen_regsSR = 0xf800;  // IFF 7, MAXM and SYSM
     state = 0;
     checkstate = 0;
-
+	clockrate = CLOCK_6144; // Set clock to 6.144Mhz
 
     // initialize pointer structure for access to all registers in byte mode
     allregsB[0x00] = (unsigned char *)&gen_regsXWA0;
@@ -7926,10 +7932,45 @@ inline void tlcsTI0()
         timer0+= 1;
 }
 
+// Update the RTC in our CPU Ram
+inline void updatertc()
+{
+	struct tm * timeinfo;
+	time(&rtcTime);
+	timeinfo = localtime(&rtcTime);
+
+	// 0091 B		: RTC: Years (BCD)
+	tlcsMemWriteByte(0x91, (unsigned char)timeinfo->tm_year);
+    
+	// 0092 B/W	    : RTC: Months (BCD), Bios reads word, writes byte
+    tlcsMemWriteByte(0x92, (unsigned char)timeinfo->tm_mon);
+
+	// 0093 B		: RTC: Days (BCD)
+    tlcsMemWriteByte(0x93, (unsigned char)timeinfo->tm_mday);
+
+	// 0094 B/W	    : RTC: Hours (BCD)
+	tlcsMemWriteByte(0x94, (unsigned char)timeinfo->tm_hour);
+    
+	// 0095 B		: RTC: Minutes (BCD)
+    tlcsMemWriteByte(0x95, (unsigned char)timeinfo->tm_min);
+
+	// 0096 B/W	    : RTC: Seconds (BCD)
+    tlcsMemWriteByte(0x96, (unsigned char)timeinfo->tm_sec);
+
+	// 0097 B		: RTC: Weekday / Leap Year
+	// Bit 0-2 = Weekday (0=sunday, 6=saturday)
+	// Bit 3	= -
+	// Bit 4-5 = (Years % 4)
+	// Bit 6-7 = -
+	tlcsMemWriteByte(0x97, (unsigned char)timeinfo->tm_wday | (unsigned char)((timeinfo->tm_year%4)<<4));
+}
+
 // TLCS900h stepping function
 inline int tlcs_step()
 {
-		
+	// Update our RTC
+	updatertc();
+
 // Debugger checks for any breakpoints or running debug instances
 #ifdef NEOGPC_DEBUGGER
 	// Check to see if our next PC is set to a breakpoint, if so break!

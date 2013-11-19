@@ -14,7 +14,7 @@ BOOL g_Z80UpdateDebug;
 static char debug_str[35000] = {0};
 
 // Uses Tokenize
-bool IsAllHex(char * must_be_hex)
+inline bool IsAllHex(char * must_be_hex)
 {
 	char copy_of_param [1024];
 	return (strtok (strcpy(copy_of_param, must_be_hex),"0123456789ABCDEFabcdef") == NULL);
@@ -226,7 +226,7 @@ INT_PTR CALLBACK TLCS900hProc(
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_ALL;
 			si.nMin = 0;
-			si.nMax = 0x200000;
+			si.nMax = 0x200000+0xFFFF;
 			si.nPos = gen_regsPC-0x200000;
 			si.nPage = 0x20;
 			SetScrollInfo(GetDlgItem(hwndDlg,IDC_DEBUGGER_DISASSEMBLY_VSCR),SB_CTL,&si,TRUE);
@@ -442,7 +442,7 @@ INT_PTR CALLBACK TLCS900hProc(
 				if ( updateDisas == true )
 				{
 					if ( si.nPos >= 0x200000 )
-						DisassembleTlcs900h(hwndDlg, 0xFF0000 + (si.nPos-0x200000));
+						DisassembleTlcs900h(hwndDlg, 0xDF0000 + si.nPos);
 					else
 						DisassembleTlcs900h(hwndDlg, si.nPos+0x200000);
 				}

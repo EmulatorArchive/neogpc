@@ -479,7 +479,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				if ( g_memViewActive == true )
 				{
 					DisplayMemoryEditor();
-					UpdateWindow(g_memViewHwnd);
+					//UpdateWindow(g_memViewHwnd);
 				}
 #endif
 
