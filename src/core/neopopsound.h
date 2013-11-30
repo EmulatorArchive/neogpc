@@ -76,7 +76,7 @@ void decreaseVolume();
 //#define dac_writeL dac_write
 //#define dac_writeR dac_write
 void dac_writeL(unsigned char);
-//void dac_writeR(unsigned char);
+void dac_writeR(unsigned char);
 void dac_write(unsigned char);
 
 #define UNDEFINED		0xFFFFFF
@@ -92,8 +92,10 @@ extern int lastChipWrite, chipWrite;	//Write Cursor
 extern int lastDacWrite, dacWrite;		//Write Cursor
 
 #define CHIPBUFFERLENGTH	35280
+#define DACBUFFERLENGTH    35280
+//#define DACBUFFERLENGTH    6400
 
-extern unsigned char blockSound[CHIPBUFFERLENGTH], blockDAC[CHIPBUFFERLENGTH];		// Gets filled with sound data.
+extern unsigned char blockSound[CHIPBUFFERLENGTH], blockDAC[DACBUFFERLENGTH];		// Gets filled with sound data.
 extern unsigned int blockSoundWritePtr;
 extern unsigned int blockSoundReadPtr;
 

@@ -84,7 +84,7 @@ public:
 
 private:
 	char * bufPage;								// buf out a big page for instructions ( greatly increase speed )
-	unsigned int bufInc[0x200000];				// how much does each buf increment by?
+	unsigned int bufInc[0x210000];				// how much does each buf increment by?
 
 	unsigned char * getCodePtr(unsigned long);	// Get the pointer to memory
 

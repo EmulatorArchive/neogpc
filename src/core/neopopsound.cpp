@@ -50,7 +50,9 @@ bool mute = false;
 #define DAC_BUFFERSIZE		(2560 * 1024) //at (256 * 1024) the PC version will crash on MS2 intro
 
 int dacLBufferRead, dacLBufferWrite, dacLBufferCount;
-unsigned short dacBufferL[DAC_BUFFERSIZE];
+int dacRBufferRead, dacRBufferWrite, dacRBufferCount;
+unsigned char dacBufferL[DAC_BUFFERSIZE];
+unsigned char dacBufferR[DAC_BUFFERSIZE];
 
 #ifndef __GP32__
 
@@ -216,31 +218,28 @@ static unsigned short sample_chip_noise(void)
 		if (noiseChip.Output[i]) vol[i] -= noiseChip.Count[i];
 	}
 
-//	if (noiseChip.Volume[3])
-//	{
-		left = STEP;
-		do
+	left = STEP;
+	do
+	{
+		int nextevent;
+
+		if (noiseChip.Count[3] < left) nextevent = noiseChip.Count[3];
+		else nextevent = left;
+
+		if (noiseChip.Output[3]) vol3 += noiseChip.Count[3];
+		noiseChip.Count[3] -= nextevent;
+		if (noiseChip.Count[3] <= 0)
 		{
-			int nextevent;
+			if (noiseChip.RNG & 1) noiseChip.RNG ^= noiseChip.NoiseFB;
+			noiseChip.RNG >>= 1;
+			noiseChip.Output[3] = noiseChip.RNG & 1;
+			noiseChip.Count[3] += noiseChip.Period[3];
+			if (noiseChip.Output[3]) vol3 += noiseChip.Period[3];
+		}
+		if (noiseChip.Output[3]) vol3 -= noiseChip.Count[3];
 
-			if (noiseChip.Count[3] < left) nextevent = noiseChip.Count[3];
-			else nextevent = left;
-
-			if (noiseChip.Output[3]) vol3 += noiseChip.Count[3];
-			noiseChip.Count[3] -= nextevent;
-			if (noiseChip.Count[3] <= 0)
-			{
-				if (noiseChip.RNG & 1) noiseChip.RNG ^= noiseChip.NoiseFB;
-				noiseChip.RNG >>= 1;
-				noiseChip.Output[3] = noiseChip.RNG & 1;
-				noiseChip.Count[3] += noiseChip.Period[3];
-				if (noiseChip.Output[3]) vol3 += noiseChip.Period[3];
-			}
-			if (noiseChip.Output[3]) vol3 -= noiseChip.Count[3];
-
-			left -= nextevent;
-		} while (left > 0);
-	//}
+		left -= nextevent;
+	} while (left > 0);
 	out = vol3 * noiseChip.Volume[3];
 
 	//if (out > MAX_OUTPUT * STEP) out = MAX_OUTPUT * STEP;
@@ -267,9 +266,6 @@ void sound_update(unsigned short* chip_buffer, int length_bytes)
 
 void WriteSoundChip(SoundChip* chip, unsigned char data)
 {
-//#ifndef __GP32__
-//    SDL_LockAudio();
-//#endif
 	//Command
 	if (data & 0x80)
 	{
@@ -298,41 +294,12 @@ void WriteSoundChip(SoundChip* chip, unsigned char data)
 		case 3:	/* tone 1 : volume */
 		case 5:	/* tone 2 : volume */
 		case 7:	/* noise  : volume */
-#ifdef NEOPOP_DEBUG
-			if (filter_sound)
-			{
-				if (chip == &toneChip)
-					system_debug_message("sound (T): Set Tone %d Volume to %d (0 = min, 15 = max)", c, 15 - (data & 0xF));
-				else
-					system_debug_message("sound (N): Set Tone %d Volume to %d (0 = min, 15 = max)", c, 15 - (data & 0xF));
-			}
-#endif
 			chip->Volume[c] = VolTable[data & 0xF];
 			break;
 
 		case 6:	/* noise  : frequency, mode */
 			{
 				int n = chip->Register[6];
-#ifdef NEOPOP_DEBUG
-	if (filter_sound)
-	{
-		char *pm, *nm = "White";
-		if ((n & 4)) nm = "Periodic";
-
-		switch(n & 3)
-		{
-		case 0: pm = "N/512"; break;
-		case 1: pm = "N/1024"; break;
-		case 2: pm = "N/2048"; break;
-		case 3: pm = "Tone#2"; break;
-		}
-
-		if (chip == &toneChip)
-			system_debug_message("sound (T): Set Noise Mode to %s, Period = %s", nm, pm);
-		else
-			system_debug_message("sound (N): Set Noise Mode to %s, Period = %s", nm, pm);
-	}
-#endif
 				chip->NoiseFB = (n & 4) ? FB_WNOISE : FB_PNOISE;
 				n &= 3;
 				/* N/512,N/1024,N/2048,Tone #2 output */
@@ -365,69 +332,35 @@ void WriteSoundChip(SoundChip* chip, unsigned char data)
 					if ((chip->Register[6] & 0x03) == 0x03)
 						chip->Period[3] = 2 * chip->Period[2];
 				}
-#ifdef NEOPOP_DEBUG
-	if (filter_sound)
-	{
-		if (chip == &toneChip)
-			system_debug_message("sound (T): Set Tone %d Frequency to %d", c, chip->Register[r]);
-		else
-			system_debug_message("sound (N): Set Tone %d Frequency to %d", c, chip->Register[r]);
-	}
-#endif
 				break;
 		}
 	}
-//#ifndef __GP32__
-//    SDL_UnlockAudio();
-//#endif
 }
 
 //=============================================================================
-
-//#ifdef TARGET_PSP
 void dac_writeL(unsigned char data)
 {
-    static int conv=5;
-//    SDL_LockAudio();
+    //Write to buffer
+    dacBufferL[dacLBufferWrite++] = data;//(data-0x80)<<8;
 
-#ifdef TARGET_PSP
-    //pretend that conv=5.5 (44100/8000) conversion factor
-    if(conv==5)
-        conv=6;
-    else
-        conv=5;
-#else
-	conv=1;
-#endif
+    //dacLBufferWrite++;
+    if (dacLBufferWrite == DAC_BUFFERSIZE)
+        dacLBufferWrite = 0;
 
-    for(int i=0;i<conv;i++)
+    //Overflow?
+    dacLBufferCount++;
+    if (dacLBufferCount == DAC_BUFFERSIZE)
     {
-        //Write to buffer
-        dacBufferL[dacLBufferWrite++] = data;//(data-0x80)<<8;
-
-        //dacLBufferWrite++;
-        if (dacLBufferWrite == DAC_BUFFERSIZE)
-            dacLBufferWrite = 0;
-
-        //Overflow?
-        dacLBufferCount++;
-        if (dacLBufferCount == DAC_BUFFERSIZE)
-        {
-            //dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
-            dacLBufferCount = 0;
-        }
+        //dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
+        dacLBufferCount = 0;
     }
-
-//    SDL_UnlockAudio();
 }
-//#endif
 
-/*void dac_writeR(unsigned char data)
+void dac_writeR(unsigned char data)
 {
-    SDL_LockAudio();
-	//Write to buffer
-	dacBufferR[dacRBufferWrite] = data;
-	dacRBufferWrite++;
+    //Write to buffer
+	dacBufferR[dacRBufferWrite++] = data;
+	
 	if (dacRBufferWrite == DAC_BUFFERSIZE)
 		dacRBufferWrite = 0;
 
@@ -435,32 +368,37 @@ void dac_writeL(unsigned char data)
 	dacRBufferCount++;
 	if (dacRBufferCount == DAC_BUFFERSIZE)
 	{
-		dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
+		//dbg_printf("dac_write: DAC buffer overflow\nPlease report this to the author.");
 		dacRBufferCount = 0;
 	}
-    SDL_UnlockAudio();
-}*/
+}
 
 void dac_mixer(unsigned short* stream, int length_bytes)
 {
-#ifndef __GP32__
     int length_words = length_bytes>>1;
     length_bytes &= 0xFFFFFFFE; //make sure it's 16bit safe
 
     if(dacLBufferRead+length_words >= DAC_BUFFERSIZE)
     {
-        //SDL_MixAudio((unsigned char*)stream, (unsigned char*)&dacBufferL[dacLBufferRead], (DAC_BUFFERSIZE-dacLBufferRead)*2, volume); //mix it to the buffer
-        //SDL_MixAudio((unsigned char*)&stream[DAC_BUFFERSIZE-dacLBufferRead], (unsigned char*)dacBufferL, length_bytes-((DAC_BUFFERSIZE-dacLBufferRead)*2), volume); //mix it to the buffer
         dacLBufferRead = length_words-(DAC_BUFFERSIZE-dacLBufferRead);
     }
     else
     {
-        //SDL_MixAudio((unsigned char*)stream, (unsigned char*)&dacBufferL[dacLBufferRead], length_bytes, volume); //mix it to the buffer
         dacLBufferRead += length_words;
     }
 
     dacLBufferCount -= length_words; //need it in 16bits
-#endif
+
+	if(dacRBufferRead+length_words >= DAC_BUFFERSIZE)
+    {
+        dacRBufferRead = length_words-(DAC_BUFFERSIZE-dacRBufferRead);
+    }
+    else
+    {
+        dacRBufferRead += length_words;
+    }
+
+    dacRBufferCount -= length_words; //need it in 16bits
 }
 
 void dac_update(unsigned char * dac_buffer, int length_bytes)
@@ -468,9 +406,12 @@ void dac_update(unsigned char * dac_buffer, int length_bytes)
 	while (length_bytes > 1)
 	{
 		//Copy then clear DAC data
+		//*(dac_buffer++) = (dacBufferR[dacRBufferRead]<<8) | dacBufferL[dacLBufferRead];
 		*(dac_buffer++) = dacBufferL[dacLBufferRead];
+		//*(dac_buffer++) = dacBufferR[dacRBufferRead];
 
 		dacBufferL[dacLBufferRead] = 0x80;  //silence?
+		dacBufferR[dacRBufferRead] = 0x80;  //silence?
 
 		length_bytes--;	// 1 byte = 8 bits
 
@@ -483,14 +424,19 @@ void dac_update(unsigned char * dac_buffer, int length_bytes)
 			if (++dacLBufferRead == DAC_BUFFERSIZE)
 				dacLBufferRead = 0;
 		}
+		if (dacRBufferCount > 0)
+		{
+			dacRBufferCount--;
+
+			//Advance the DAC read
+			dacRBufferRead++;
+			if (++dacRBufferRead == DAC_BUFFERSIZE)
+				dacRBufferRead = 0;
+		}
 	}
 }
 
 //=============================================================================
-
-#ifdef __GP32__
-volatile int soundON = 0;
-#endif
 
 //Resets the sound chips, also used whenever sound options are changed
 void sound_init(int SampleRate)
@@ -513,8 +459,8 @@ void sound_init(int SampleRate)
 	memset(&noiseChip, 0, sizeof(SoundChip));
 
    //Silence the chip and DAC
-   memset(&blockSound, 0, CHIPBUFFERLENGTH);
-   memset(&blockDAC, 0x80, CHIPBUFFERLENGTH);
+   memset(&blockSound, 0x80, CHIPBUFFERLENGTH);
+   memset(&blockDAC, 0x80, DACBUFFERLENGTH);
 
 	//Default register settings
 	for (i = 0;i < 8;i+=2)
@@ -547,40 +493,31 @@ void sound_init(int SampleRate)
 
 	//Clear the DAC buffer
 	for (i = 0; i < DAC_BUFFERSIZE; i++)
+	{
 		dacBufferL[i] = 0x80;
+		dacBufferR[i] = 0x80;
+	}
 
 	dacLBufferCount = 0;
 	dacLBufferRead = 0;
 	dacLBufferWrite = 0;
-
-#ifdef __GP32__
-	soundON = 1;
-#endif
+		
+	dacRBufferCount = 0;
+	dacRBufferRead = 0;
+	dacRBufferWrite = 0;
 }
 
 //=============================================================================
-
-
-
-
 #define NGPC_CHIP_FREQUENCY		44100
-#ifdef TARGET_WIZ
-int chip_freq=44100;//what we'd prefer
-#else
 int chip_freq=NGPC_CHIP_FREQUENCY;//what we'd prefer
-#endif
-
 
 // ====== Chip sound =========
-//static LPDIRECTSOUNDBUFFER chipBuffer = NULL;	// Chip Buffer
 int lastChipWrite = 0, chipWrite = UNDEFINED;	//Write Cursor
 
 // ====== DAC sound =========
-//static LPDIRECTSOUNDBUFFER dacBuffer = NULL;	// DAC Buffer
 int lastDacWrite = 0, dacWrite = UNDEFINED;		//Write Cursor
 
-
-unsigned char blockSound[CHIPBUFFERLENGTH], blockDAC[CHIPBUFFERLENGTH];		// Gets filled with sound data.
+unsigned char blockSound[CHIPBUFFERLENGTH], blockDAC[DACBUFFERLENGTH];		// Gets filled with sound data.
 unsigned int blockSoundWritePtr = 0;
 unsigned int blockSoundReadPtr = 0;
 
@@ -590,35 +527,8 @@ void system_sound_chipreset(void)
 	sound_init(chip_freq);
 }
 
-#ifdef __GP32__
-
-int audioCallback(unsigned short* sndBuf,int len) {
-	int i,smp;
-	if (soundON==0)
-		return 0;
-	for (i=0;i<len;i++)
-	{
-		smp = (sample_chip_tone() + sample_chip_noise()) >> 1;
-		smp = (smp + dacBufferL[dacLBufferRead]) >> 1;
-
-		*(sndBuf++) = smp;
-		*(sndBuf++) = smp; // stereo ?
-		dacBufferL[dacLBufferRead] = 0;  //silence?
-		if (dacLBufferCount > 0)
-		{
-			dacLBufferCount--;
-			if (++dacLBufferRead == DAC_BUFFERSIZE)
-				dacLBufferRead = 0;
-		}
-	}
-	return 1;
-}
-
-#endif
-
 void mixaudioCallback(void *userdata, unsigned char *stream, int len)
 {
-#ifndef __GP32__
     sound_update((unsigned short*)blockSound, len);	//Get sound data
 //    memcpy(stream, blockSound, len);        //put it in the buffer
     //SDL_MixAudio(stream, blockSound, len, volume); //mix it to the buffer
@@ -630,42 +540,12 @@ void mixaudioCallback(void *userdata, unsigned char *stream, int len)
 
         dac_mixer((unsigned short*)stream, len);	//Get DAC data
     }
-#endif
 }
 
 int sound_system_init()
 {
-   /*
-#ifndef __GP32__
-    //set up SDL sound here?
-    SDL_AudioSpec fmt, retFmt;
-
-    fmt.freq = chip_freq;  //11025 is good for dac_ sound
-    fmt.format = AUDIO_S16;
-    fmt.channels = 1;
-#ifdef TARGET_PSP
-    fmt.samples = 512;
-#else
-    fmt.samples = 512;
-#endif
-    fmt.callback = mixaudioCallback;
-    fmt.userdata = NULL;
-
-    if ( SDL_OpenAudio(&fmt, &retFmt) < 0 ) {
-        fprintf(stderr, "Unable to open audio: %s freq=%d\n", SDL_GetError(), fmt.freq);
-        exit(1);
-    }
-
-    chip_freq = retFmt.freq;
-
-	system_sound_chipreset();	//Resets chips
-
-    SDL_PauseAudio(0);
-#else
-	system_sound_chipreset();	//Resets chips
-#endif
    system_sound_chipreset();	//Resets chips
-   */
+
    return 1;
 }
 

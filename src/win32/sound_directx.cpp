@@ -15,7 +15,7 @@ LPDIRECTSOUNDBUFFER m_dacBuffer;
 #define CHIPBUFLEN 35280
 
 #define DACFREQ 8000   // hz From NeoPop?
-#define DACBUFLEN 3200
+#define DACBUFLEN 128000 // 16 * 8000
 
 void dx9_sound_init(HWND hWnd)
 {
@@ -244,7 +244,7 @@ void dx9_sound_update()
 		src16 = (unsigned short*)blockSound;	//Copy from this buffer
 
 		dest16 = chipPtr1;
-		count = pdwAudioBytes1 >> 2;
+		count = pdwAudioBytes1 >> 2; // mono -> stereo = count/2
 		while(count)
 		{ 
 			*dest16++ = *src16;
@@ -255,7 +255,7 @@ void dx9_sound_update()
 		if (chipPtr2)
 		{
 			dest16 = chipPtr2;
-			count = pdwAudioBytes2 >> 2;
+			count = pdwAudioBytes2 >> 2;	// mono -> stereo = count/2
 			while(count)
 			{ 
 				*dest16++ = *src16;

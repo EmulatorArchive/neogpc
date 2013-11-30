@@ -147,13 +147,6 @@ void race_bios()
 {
 	unsigned int i, x;
 
-   // setup the CPU ram
-   // interrupt priorities, timer settings, transfer settings, etc
-   for(i=0; i<sizeof(ngpcpuram); i++)
-   {
-         memCPURAM[i] = ngpcpuram[i];
-   }
-
 	// Fake BIOS From RACE emulator
 	// Assume we are not loading a bios for now
 	for(i = 0; i < 0x40; i++)
@@ -194,8 +187,14 @@ void race_bios()
 	for(i=0; i< sizeof(ngpVectors)/4; i++) {
 		*((unsigned long *)(&memBios[0x00ff00 + 4*i])) = ngpVectors[i];
 	}
+   
+   // setup the CPU ram
+   // interrupt priorities, timer settings, transfer settings, etc
+   for(i=0; i<sizeof(ngpcpuram); i++)
+   {
+         memCPURAM[i] = ngpcpuram[i];
+   }
 
-	
    //koyote.bin handling (what is koyote.bin? a NGPC memory dump?)
    // memcpy(memRAM, koyote_bin, KOYOTE_BIN_SIZE/*12*1024*/);
 
@@ -301,7 +300,7 @@ unsigned char * get_address(unsigned long addr)
                     memRAM[addr-0x00004000] = 0x03;
                     break;
                 case 0x6F85:
-                   //memRAM[addr-0x00004000] = 0x00; ??
+                   memRAM[addr-0x00004000] = 0x00; //??
                     break;
                 case 0x6F82:
                     memRAM[addr-0x00004000] = memInputState;
@@ -371,55 +370,55 @@ unsigned char tlcsMemReadByte(unsigned long addr)
       {
          switch (addr)  //Thanks Koyote (RACE!)
          {
-		 case 0x4000:
+		 //case 0x4000:
 			// Noise Channel & Right Volume
-			 return noiseChip.LastRegister; // ??? how do we do this?
+		//	 return noiseChip.LastRegister; // ??? how do we do this?
 			//return memRAM[addr-0x00004000];
-			break;
-		 case 0x4001:
+		//	break;
+		 //case 0x4001:
 			// Tone Channel & Left Volume
-			 return toneChip.LastRegister; // ??? how do we do this?
+		//	 return toneChip.LastRegister; // ??? how do we do this?
 			 //return memRAM[addr-0x00004000];
-			break;
+		//	break;
 		 case 0x6DA2:            // Purpose?
             return 0x80;
             break;
          case 0x6F80:            // Battery Power (0xFF = Lots!)
             return 0xFF;
             break;
-         case 0x6F80+1:          // Battery Power (0x3FF = Lots!)
+         case 0x6F81:          // Battery Power (0x3FF = Lots!)
             return 0x03;
             break;
          case 0x6F82:
             return memInputState; // get the input state
             break;
-		 case 0x6F83:			// Boot something?
-			return 0x00;
-			break;
-		 case 0x6F84:			// User Boot
-			 return 1<<6;		// Bit 0-4 = 0
+		 //case 0x6F83:			// Boot something?
+		//	return 0x00;
+		//	break;
+		 //case 0x6F84:			// User Boot
+		//	 return 1<<6;		// Bit 0-4 = 0
 								// Bit 5 = "Resume" startup: 1 = yes, 0 = no
 								// Bit 6 = "Power On" startup: 1 = yes, 0 = no
 								// Bit 7 = "Alarm" startup: 1 = yes, 0 = no
-			 break;
+		//	 break;
 		 case 0x6F85:            // Shutdown Request?
             return memRAM[addr-0x00004000];
             break;
-		 case 0x6F86:			// User Answer
-			 return 0x00;
-			break;
-		 case 0x6F87:			// Language?
-			return 0x01;		// Force English for now
-			break;
+		// case 0x6F86:			// User Answer
+		//	 return 0x00;
+		//	break;
+		// case 0x6F87:			// Language?
+		//	return 0x01;		// Force English for now
+		//	break;
 		 case 0x6F88:			// CPU clock
 			return memRAM[addr-0x00004000];
 			break;
-		 case 0x6F95:			// Reset RTC???
-			return 0x00;		// breakpoint here
-			break;
-		 case 0x8000:
-			 return memCPURAM[0xBC];
-			break;
+		 //case 0x6F95:			// Reset RTC???
+		//	return 0x00;		// breakpoint here
+		//	break;
+		 //case 0x8000:
+		//	 return memCPURAM[0xBC];
+		//	break;
          default:
             return memRAM[addr-0x00004000];
          }
@@ -491,11 +490,11 @@ void tlcsMemWriteByte(unsigned long addr, unsigned char data)
          if (memCPURAM[0xB8] == 0xAA)
             dac_writeL(data); //Flavor DAC_data_w(0,data);
          break;
-      /*case 0xA3:	// R CH DAC Control Register  //Flavor hack for mono only sound
-      ngpSoundExecute();
-      if (cpuram[0xB8] == 0xAA)
-      dac_writeR(data);//Flavor DAC_data_w(1,data);
-      break;*/
+      case 0xA3:	// R CH DAC Control Register
+		  ngpSoundExecute();
+		if (memCPURAM[0xB8] == 0xAA)
+			 dac_writeR(data);//Flavor DAC_data_w(1,data);
+		break;
       case 0xB8:	// Z80 Reset
          //				if (data == 0x55)	DAC_data_w(0,0);
       case 0xB9:	// Sourd Source Reset Control Register
